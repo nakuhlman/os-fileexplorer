@@ -1,6 +1,10 @@
 make --dry-run --keep-going --print-directory
 make: Entering directory '/home/nkuhlman/Desktop/CISC310/Programs/os-fileexplorer'
 g++ -std=c++11 -c -o obj/main.o src/main.cpp -I/usr/include/SDL2 -I./include
-g++ -std=c++11 -o bin/fileexplorer obj/main.o -lSDL2 -lSDL2_image -lSDL2_ttf
+g++ -std=c++11 -c -o obj/entries.o src/entries.cpp -I/usr/include/SDL2 -I./include
+g++ -std=c++11 -o bin/fileexplorer obj/main.o obj/entries.o -lSDL2 -lSDL2_image -lSDL2_ttf
 make: Leaving directory '/home/nkuhlman/Desktop/CISC310/Programs/os-fileexplorer'
+ 
+make: Warning: File 'Makefile' has modification time 3545 s in the future
+make: warning:  Clock skew detected.  Your build may be incomplete.
  

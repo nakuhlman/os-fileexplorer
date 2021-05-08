@@ -2,6 +2,11 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
+#include <string>
+#include <vector>
+#include <algorithm>
+#include <dirent.h>
+#include <sys/stat.h>
 
 #define WIDTH 800
 #define HEIGHT 600
@@ -9,6 +14,7 @@
 // Structure containing all data needed for application
 typedef struct AppData {
     TTF_Font *font;
+    // use vectors here for multiple
     SDL_Texture *folder_icon;
     SDL_Texture *phrase;
 
@@ -64,11 +70,7 @@ void initialize(SDL_Renderer *renderer, AppData *data_ptr)
 
     // ONLY NEED TO DO THE FOLLOWING ONE TIME 
     // load the folder icon
-    // surface is the intermediary
-    SDL_Surface *surf = IMG_Load("resrc/images/folder_icon&48.png");
-    // create a texture from the surface, then delete the surface (no longer needed)
-    data_ptr->folder_icon = SDL_CreateTextureFromSurface(renderer, surf);
-    SDL_FreeSurface(surf);
+
 
     // set phrase color to black
     SDL_Color phrase_color = {0, 0, 0}; 
@@ -117,3 +119,64 @@ void render(SDL_Renderer *renderer, AppData *data_ptr)
     SDL_RenderPresent(renderer);
 }
 
+
+
+//void listDirectory(std::string dirname, int indent = 0);
+
+/*
+int main(int argc, char **argv)
+{
+    // if no command line paramater exists, list contents of current working directory
+    // else, list contents of directory specified
+    std::string dirname = ".";
+    if (argc >= 2)
+    {
+        dirname = argv[1];
+    }
+
+    listDirectory(dirname);
+
+    return 0;
+}
+*/
+
+/*
+void listDirectory(std::string dirname, int indent)
+{
+	std::string space = "";
+	for(int i = 0; i < indent; i++) { space += " "; }
+
+    struct stat info;
+    int err = stat(dirname.c_str(), &info);
+    if (err == 0 && S_ISDIR(info.st_mode)) {
+	std::vector<std::string> files;
+		
+        DIR* dir = opendir(dirname.c_str());		
+		
+        struct dirent *entry;
+        while ((entry = readdir(dir)) != NULL) {
+            files.push_back(entry->d_name);
+        }
+        closedir(dir);
+
+	std::sort(files.begin(), files.end());
+	
+	int i, file_err;
+	struct stat file_info;
+
+	for(int i = 0; i < files.size(); i++) {
+		std::string full_path = dirname + "/" + files[i];
+		file_err = stat(full_path.c_str(), &file_info);
+		if(file_err) {
+			fprintf(stderr, "Uh, oh, shouldnt be here");
+		} else if(S_ISDIR(file_info.st_mode)) {
+			printf("%s%s (directory)\n", space.c_str(), files[i].c_str());
+			if(files[i] != "." && files[i] != "..") {
+				listDirectory(full_path, indent + 1);
+			}				
+		} else {
+			printf("%s%s (directory)\n", space.c_str(), files[i].c_str());
+		}
+    }
+}
+*/

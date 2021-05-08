@@ -1,4 +1,7 @@
 make all --print-data-base --no-builtin-variables --no-builtin-rules --question
+make: Warning: File 'Makefile' has modification time 3545 s in the future
+make: warning:  Clock skew detected.  Your build may be incomplete.
+ 
 # GNU Make 4.2.1
 # Built for x86_64-pc-linux-gnu
 # Copyright (C) 1988-2016 Free Software Foundation, Inc.
@@ -6,7 +9,7 @@ make all --print-data-base --no-builtin-variables --no-builtin-rules --question
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Thu May  6 23:37:31 2021
+# Make data base, printed on Fri May  7 20:50:18 2021
 
 # Variables
 
@@ -49,7 +52,7 @@ SNAP_DATA = /var/snap/code/63
 # environment
 VSCODE_NLS_CONFIG = {"locale":"en-us","availableLanguages":{},"_languagePackSupport":true}
 # environment
-JOURNAL_STREAM = 8:33749
+JOURNAL_STREAM = 8:35138
 # environment
 XDG_CONFIG_DIRS = /etc/xdg/xdg-ubuntu:/etc/xdg
 # environment
@@ -75,14 +78,13 @@ VSCODE_VERBOSE_LOGGING = true
 # environment
 _ = /snap/code/63/usr/share/code/code
 # makefile (from 'Makefile', line 11)
-OBJS = $(addprefix $(OBJDIR)/, main.o)
+OBJS = $(addprefix $(OBJDIR)/, main.o entries.o)
 # environment
-MANAGERPID = 1330
+MANAGERPID = 1336
 # environment
 CLUTTER_IM_MODULE = ibus
 # environment
 LESSOPEN = | /usr/bin/lesspipe %s
- 
 # makefile (from 'Makefile', line 15)
 mkdirs := 
 # environment
@@ -96,7 +98,7 @@ PATH = /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/
 # environment
 GPG_AGENT_INFO = /run/user/1000/gnupg/S.gpg-agent:0:1
 # environment
-SESSION_MANAGER = local/CISC310-VM:@/tmp/.ICE-unix/1706,unix/CISC310-VM:/tmp/.ICE-unix/1706
+SESSION_MANAGER = local/CISC310-VM:@/tmp/.ICE-unix/1711,unix/CISC310-VM:/tmp/.ICE-unix/1711
 # environment
 XDG_RUNTIME_DIR = /run/user/1000
 # environment
@@ -114,7 +116,7 @@ DISABLE_WAYLAND = 1
 # environment
 VSCODE_CRASH_REPORTER_START_OPTIONS = {"companyName":"Microsoft","productName":"VSCode","submitURL":"appcenter://code?aid=fba07a4d-84bd-4fc8-a125-9640fc8ce171&uid=010be0dd-024b-47e9-a451-94b07cce4f40&iid=010be0dd-024b-47e9-a451-94b07cce4f40&sid=010be0dd-024b-47e9-a451-94b07cce4f40","uploadToServer":true}
 # environment
-INVOCATION_ID = 0a1c1efc42a44e24bde4a0c61abcd751
+INVOCATION_ID = d71d7ce77fba4157bdaa88fb4ffdcd63
 # environment
 GDK_PIXBUF_MODULEDIR = /snap/code/63/usr/lib/x86_64-linux-gnu/gdk-pixbuf-2.0/2.10.0/loaders
 # makefile (from 'Makefile', line 5)
@@ -128,7 +130,7 @@ XDG_SESSION_DESKTOP = ubuntu
 # environment
 SSH_AUTH_SOCK = /run/user/1000/keyring/ssh
 # environment
-GIO_LAUNCHED_DESKTOP_FILE_PID = 2096
+GIO_LAUNCHED_DESKTOP_FILE_PID = 3951
 # automatic
 %F = $(notdir $%)
 # environment
@@ -146,7 +148,7 @@ PWD = /home/nkuhlman/Desktop/CISC310/Programs/os-fileexplorer
 # default
 .LOADED := 
 # environment
-SSH_AGENT_PID = 1549
+SSH_AGENT_PID = 1555
 # environment
 ORIGINAL_XDG_CURRENT_DESKTOP = ubuntu:GNOME
 # environment
@@ -196,7 +198,7 @@ BINDIR = bin
 # environment
 GNOME_SHELL_SESSION_MODE = ubuntu
 # environment
-VSCODE_IPC_HOOK_EXTHOST = /run/user/1000/vscode-ipc-a0f5f57f-20f9-4faf-9e38-43fb6ced33f7.sock
+VSCODE_IPC_HOOK_EXTHOST = /run/user/1000/vscode-ipc-e9a5bf76-a71b-4fe4-ae84-c5446bae0fb2.sock
 # makefile (from 'Makefile', line 12)
 EXEC = $(addprefix $(BINDIR)/, fileexplorer)
 # default
@@ -278,11 +280,12 @@ WINDOWPATH = 2
 # environment
 GJS_DEBUG_OUTPUT = stderr
 # default
+ 
 .RECIPEPREFIX := 
 # environment
 LANG = C
 # environment
-VSCODE_PID = 2145
+VSCODE_PID = 4000
 # variable set hash-table stats:
 # Load=136/1024=13%, Rehash=0, Collisions=29/180=16%
 
@@ -292,10 +295,10 @@ VSCODE_PID = 2145
 
 # Directories
 
-# . (device 2053, inode 3670646): 11 files, no impossibilities.
+# . (device 2053, inode 3670646): 12 files, no impossibilities.
 # src (device 2053, inode 264886): 3 files, no impossibilities so far.
 
-# 14 files, no impossibilities in 2 directories.
+# 15 files, no impossibilities in 2 directories.
 
 # Implicit Rules
 
@@ -316,10 +319,16 @@ all: bin/fileexplorer
 # variable set hash-table stats:
 # Load=0/32=0%, Rehash=0, Collisions=0/6=0%
 
+# Not a target:
+obj/entries.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
 obj/main.o: src/main.cpp
 #  Implicit rule search has been done.
 #  Implicit/static pattern stem: 'main'
-#  Last modified 2021-05-06 23:34:40.989867387
+#  Last modified 2021-05-07 00:02:55.628470058
 #  File has been updated.
 #  Needs to be updated (-q is set).
 # automatic
@@ -339,7 +348,6 @@ obj/main.o: src/main.cpp
 # automatic
 # ? := src/main.cpp
 # variable set hash-table stats:
- 
 # Load=8/32=25%, Rehash=0, Collisions=2/16=12%
 #  recipe to execute (from 'Makefile', line 25):
 	$(CXX) $(CXXFLAGS) -c -o $@ $< $(INCLUDE)
@@ -347,13 +355,13 @@ obj/main.o: src/main.cpp
 # Not a target:
 Makefile:
 #  Implicit rule search has been done.
-#  Last modified 2021-05-06 23:37:30.900867043
+#  Last modified 2021-05-07 21:49:23.434000094
 #  File has been updated.
 #  Successfully updated.
 
-bin/fileexplorer: obj/main.o
+bin/fileexplorer: obj/main.o obj/entries.o
 #  Implicit rule search has not been done.
-#  Last modified 2021-05-06 23:34:41.11786739
+#  Last modified 2021-05-07 00:02:55.748470061
 #  File has been updated.
 #  Needs to be updated (-q is set).
 # variable set hash-table stats:
@@ -374,28 +382,27 @@ clean:
 #  recipe to execute (from 'Makefile', line 30):
 	rm -f $(OBJS) $(EXEC)
 
- 
 # Not a target:
 src/main.cpp:
 #  Implicit rule search has been done.
-#  Last modified 2021-05-06 23:37:21.96358105
+#  Last modified 2021-05-07 20:34:32.899617114
 #  File has been updated.
 #  Successfully updated.
 
 # files hash-table stats:
-# Load=8/1024=1%, Rehash=0, Collisions=0/25=0%
+# Load=9/1024=1%, Rehash=0, Collisions=0/27=0%
 # VPATH Search Paths
 
 # No 'vpath' search paths.
 
 # No general ('VPATH' variable) search path.
 
-# strcache buffers: 1 (0) / strings = 24 / storage = 197 B / avg = 8 B
-# current buf: size = 8162 B / used = 197 B / count = 24 / avg = 8 B
+# strcache buffers: 1 (0) / strings = 26 / storage = 219 B / avg = 8 B
+# current buf: size = 8162 B / used = 219 B / count = 26 / avg = 8 B
 
-# strcache performance: lookups = 37 / hit rate = 35%
+# strcache performance: lookups = 39 / hit rate = 33%
 # hash-table stats:
-# Load=24/8192=0%, Rehash=0, Collisions=2/37=5%
-# Finished Make data base on Thu May  6 23:37:31 2021
+# Load=26/8192=0%, Rehash=0, Collisions=2/39=5%
+# Finished Make data base on Fri May  7 20:50:18 2021
 
  

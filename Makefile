@@ -8,7 +8,7 @@ SRCDIR= src
 OBJDIR= obj
 BINDIR= bin
 
-OBJS= $(addprefix $(OBJDIR)/, main.o)
+OBJS= $(addprefix $(OBJDIR)/, main.o entries.o)
 EXEC= $(addprefix $(BINDIR)/, fileexplorer)
 
 # CREATE DIRECTORIES (IF DON'T ALREADY EXIST)
