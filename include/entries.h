@@ -36,7 +36,6 @@ class FileEntry {
         void createSizeTexture(int size, SDL_Renderer* renderer);
         void createPermissionsTexture(std::string permissions, SDL_Renderer* renderer);
         // Purely virtual methods that will be defined uniquely by each subclass of FileEntry
-        virtual ~FileEntry() {};
         virtual void setIcon() = 0;
         virtual void render() = 0;
 };

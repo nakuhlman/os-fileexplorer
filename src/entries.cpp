@@ -9,109 +9,120 @@
 #include <dirent.h>
 #include <sys/stat.h>
 
-class FileEntry {
+// Constructor for a subclass of FileEntry (this con)
+FileEntry::FileEntry(std::string name, int size, std::string path, std::string permissions, SDL_Renderer* renderer) {
+    // Set the font to the font in the resrc folder that will be used by all file explorer entry instances
+    data.font = TTF_OpenFont("resrc/OpenSans-Regular.ttf", 25);
+    // Use the name parameter to create a texture for the name of the file explorer entry
+    createNameTexture(name, renderer);
+    // Use the size parameter to create a texture for the name of the file explorer entry
+    createSizeTexture(size, renderer);
+    // Set permissions
+    createPermissionsTexture(permissions, renderer);
+    // Set path
+    filepath = path;
+}
 
-    protected:
-
-    FileEntry(std::string name, uint32_t size, std::string path, std::string permissions, SDL_Renderer* renderer) {
-        // Set the font to the font in the resrc folder that will be used by all file explorer entry instances
-        data.font = TTF_OpenFont("resrc/OpenSans-Regular.ttf", 25);
-        // Use the name parameter to create a texture for the name of the file explorer entry
-        createNameTexture(name, renderer);
-        // Use the name parameter to create a texture for the name of the file explorer entry
-        createSizeTexture(size, renderer);
-        // Set permissions
-        createPermissionsTexture(permissions, renderer);
-        // Set path
-        filepath = path;
-        // Set permissions
-
-
-    }
-
-    // The data for the entry
-    SDL_Data data;
-    // The size of the entry
-    uint32_t size_in_bytes;
-    // The path to the entry in the filesystem
-    std::string filepath;
-    // Contains characters representing permissions for the entry ([r,w,x] for user, group, and everyone, respectfully)
-    std::vector<char> permissions;
-
-    public:
-
-
-    /* Sets the name for the file explorer entry based on a string parameter. Implementation is the same for all file entry
-     * types, so it is a concrete method. */
-    void createNameTexture(std::string name, SDL_Renderer* renderer) {
-        SDL_Color name_color = {0, 0, 0}; 
-        SDL_Surface *surf = TTF_RenderText_Solid(data.font, name.c_str(), name_color);
-        data.name = SDL_CreateTextureFromSurface(renderer, surf);
-        SDL_FreeSurface(surf);
-    }
-
-    void createSizeTexture(uint32_t size, SDL_Renderer* renderer) {
-        char size_as_string[20];
-        sprintf(size_as_string, "%u", size);
-
-        SDL_Color size_color = {0, 0, 0}; 
-        SDL_Surface *surf = TTF_RenderText_Solid(data.font, size_as_string, size_color);
-        data.size = SDL_CreateTextureFromSurface(renderer, surf);
-        SDL_FreeSurface(surf);
-    }
-
-    void createPermissionsTexture(uint32_t size, SDL_Renderer* renderer) {
-        SDL_Color size_color = {0, 0, 0}; 
-        SDL_Surface *surf = TTF_RenderText_Solid(data.font, itoa(size), size_color);
-        data.size = SDL_CreateTextureFromSurface(renderer, surf);
-        SDL_FreeSurface(surf);
-    }
-
+// Creates and saves a name texture using the parameters passed into the FileEntry instance's constructor
+void FileEntry::createNameTexture(std::string name, SDL_Renderer* renderer) {
+    SDL_Color name_color = {0, 0, 0}; 
+    SDL_Surface *surf = TTF_RenderText_Solid(data.font, name.c_str(), name_color);
+    data.name = SDL_CreateTextureFromSurface(renderer, surf);
+    SDL_FreeSurface(surf);
+}
         
-    virtual void setIcon() = 0;
-    virtual void render() = 0;
-};
+// Creates and saves a size texture using the parameters passed into the FileEntry instance's constructor
+void FileEntry::createSizeTexture(int size, SDL_Renderer* renderer) {
+    // 'size' needs to be a string
+    char size_as_string[20];
+    sprintf(size_as_string, "%u", size);
 
+    SDL_Color size_color = {0, 0, 0}; 
+    SDL_Surface *surf = TTF_RenderText_Solid(data.font, size_as_string, size_color);
+    data.size = SDL_CreateTextureFromSurface(renderer, surf);
+    SDL_FreeSurface(surf);
+}
 
-/* Directory implementation of FileEntry */
+// Creates and saves a permissions texture using the parameters passed into the FileEntry instance's constructor
+void FileEntry::createPermissionsTexture(std::string permissions, SDL_Renderer* renderer) {
+    SDL_Color permissions_color = {0, 0, 0}; 
+    SDL_Surface *surf = TTF_RenderText_Solid(data.font, permissions.c_str(), permissions_color);
+    data.permissions = SDL_CreateTextureFromSurface(renderer, surf);
+    SDL_FreeSurface(surf);
+}
+
+/**************************************************************/
+/**           FILEENTRY SUBCLASSES/IMPLEMENTATIONS           **/
+/**  these classes inherit from FileEntry, but also provide  **/
+/**    specific implementations of purely virtual methods    **/
+/**************************************************************/
+
 class Directory : public FileEntry {
     public:
-        ~Directory();
-
-
-        void setName(std::string name, SDL_Renderer* renderer) {
-            SDL_Color name_color = {0, 0, 0}; 
-            SDL_Surface *surf = TTF_RenderText_Solid(data.font, name.c_str(), name_color);
-            data.name = SDL_CreateTextureFromSurface(renderer, surf);
+        
+        // Set the icon for a directory
+        void setIcon(std::string name, SDL_Renderer* renderer) {
+            // surface is the intermediary
+            SDL_Surface *surf = IMG_Load("resrc/images/folder_icon.png");
+            // create a texture from the surface, then delete the surface (no longer needed)
+            data.icon = SDL_CreateTextureFromSurface(renderer, surf);
             SDL_FreeSurface(surf);
         }
-        void render();  
 };
 
-
-
 class Executable : public FileEntry {
-
-
+    public:
+        
+        // Set the icon for an executable
+        void setIcon(std::string name, SDL_Renderer* renderer) {
+            // surface is the intermediary
+            SDL_Surface *surf = IMG_Load("resrc/images/executable_icon.png");
+            // create a texture from the surface, then delete the surface (no longer needed)
+            data.icon = SDL_CreateTextureFromSurface(renderer, surf);
+            SDL_FreeSurface(surf);
+        }
 };
 
 class Image : public FileEntry {
-    private:
-
     public:
+        void setIcon(std::string name, SDL_Renderer* renderer) {
+            // surface is the intermediary
+            SDL_Surface *surf = IMG_Load("resrc/images/image_icon.png");
+            // create a texture from the surface, then delete the surface (no longer needed)
+            data.icon = SDL_CreateTextureFromSurface(renderer, surf);
+            SDL_FreeSurface(surf);
+        }    
 };
 
 class Video : public FileEntry {
-    private:
-
     public:
+        void setIcon(std::string name, SDL_Renderer* renderer) {
+            // surface is the intermediary
+            SDL_Surface *surf = IMG_Load("resrc/images/video_icon.png");
+            // create a texture from the surface, then delete the surface (no longer needed)
+            data.icon = SDL_CreateTextureFromSurface(renderer, surf);
+            SDL_FreeSurface(surf);
+        }
 };
 
 class CodeFile : public FileEntry {
-    private:
-
     public:
+        void setIcon(std::string name, SDL_Renderer* renderer) {
+            // surface is the intermediary
+            SDL_Surface *surf = IMG_Load("resrc/images/codefile_icon.png");
+            // create a texture from the surface, then delete the surface (no longer needed)
+            data.icon = SDL_CreateTextureFromSurface(renderer, surf);
+            SDL_FreeSurface(surf);
+        }
 };
 
 class OtherFile : public FileEntry {
+    public:
+        void setIcon(std::string name, SDL_Renderer* renderer) {
+            // surface is the intermediary
+            SDL_Surface *surf = IMG_Load("resrc/images/otherfile_icon.png");
+            // create a texture from the surface, then delete the surface (no longer needed)
+            data.icon = SDL_CreateTextureFromSurface(renderer, surf);
+            SDL_FreeSurface(surf);
+        }
 };
