@@ -1,13 +1,4 @@
 #include "entries.h"
-#include <iostream>
-#include <SDL.h>
-#include <SDL_image.h>
-#include <SDL_ttf.h>
-#include <string>
-#include <vector>
-#include <algorithm>
-#include <dirent.h>
-#include <sys/stat.h>
 
 // Constructor for a subclass of FileEntry (this con)
 FileEntry::FileEntry(std::string name, int size, std::string path, std::string permissions, SDL_Renderer* renderer) {
@@ -56,73 +47,53 @@ void FileEntry::createPermissionsTexture(std::string permissions, SDL_Renderer* 
 /**  these classes inherit from FileEntry, but also provide  **/
 /**    specific implementations of purely virtual methods    **/
 /**************************************************************/
+     
+// Set the icon for a directory
+void Directory::setIcon(std::string name, SDL_Renderer* renderer) {
+    // surface is the intermediary
+    SDL_Surface *surf = IMG_Load("resrc/images/folder_icon.png");
+    // create a texture from the surface, then delete the surface (no longer needed)
+    data.icon = SDL_CreateTextureFromSurface(renderer, surf);
+    SDL_FreeSurface(surf);
+}
 
-class Directory : public FileEntry {
-    public:
-        
-        // Set the icon for a directory
-        void setIcon(std::string name, SDL_Renderer* renderer) {
-            // surface is the intermediary
-            SDL_Surface *surf = IMG_Load("resrc/images/folder_icon.png");
-            // create a texture from the surface, then delete the surface (no longer needed)
-            data.icon = SDL_CreateTextureFromSurface(renderer, surf);
-            SDL_FreeSurface(surf);
-        }
-};
+// Set the icon for an executable
+void Executable::setIcon(std::string name, SDL_Renderer* renderer) {
+    // surface is the intermediary
+    SDL_Surface *surf = IMG_Load("resrc/images/executable_icon.png");
+    // create a texture from the surface, then delete the surface (no longer needed)
+    data.icon = SDL_CreateTextureFromSurface(renderer, surf);
+    SDL_FreeSurface(surf);
+}
 
-class Executable : public FileEntry {
-    public:
-        
-        // Set the icon for an executable
-        void setIcon(std::string name, SDL_Renderer* renderer) {
-            // surface is the intermediary
-            SDL_Surface *surf = IMG_Load("resrc/images/executable_icon.png");
-            // create a texture from the surface, then delete the surface (no longer needed)
-            data.icon = SDL_CreateTextureFromSurface(renderer, surf);
-            SDL_FreeSurface(surf);
-        }
-};
+void Image::setIcon(std::string name, SDL_Renderer* renderer) {
+    // surface is the intermediary
+    SDL_Surface *surf = IMG_Load("resrc/images/image_icon.png");
+    // create a texture from the surface, then delete the surface (no longer needed)
+    data.icon = SDL_CreateTextureFromSurface(renderer, surf);
+    SDL_FreeSurface(surf);
+}
 
-class Image : public FileEntry {
-    public:
-        void setIcon(std::string name, SDL_Renderer* renderer) {
-            // surface is the intermediary
-            SDL_Surface *surf = IMG_Load("resrc/images/image_icon.png");
-            // create a texture from the surface, then delete the surface (no longer needed)
-            data.icon = SDL_CreateTextureFromSurface(renderer, surf);
-            SDL_FreeSurface(surf);
-        }    
-};
+void Video::setIcon(std::string name, SDL_Renderer* renderer) {
+    // surface is the intermediary
+    SDL_Surface *surf = IMG_Load("resrc/images/video_icon.png");
+    // create a texture from the surface, then delete the surface (no longer needed)
+    data.icon = SDL_CreateTextureFromSurface(renderer, surf);
+    SDL_FreeSurface(surf);
+}
 
-class Video : public FileEntry {
-    public:
-        void setIcon(std::string name, SDL_Renderer* renderer) {
-            // surface is the intermediary
-            SDL_Surface *surf = IMG_Load("resrc/images/video_icon.png");
-            // create a texture from the surface, then delete the surface (no longer needed)
-            data.icon = SDL_CreateTextureFromSurface(renderer, surf);
-            SDL_FreeSurface(surf);
-        }
-};
+void CodeFile::setIcon(std::string name, SDL_Renderer* renderer) {
+    // surface is the intermediary
+    SDL_Surface *surf = IMG_Load("resrc/images/codefile_icon.png");
+    // create a texture from the surface, then delete the surface (no longer needed)
+    SDL_Data.icon = SDL_CreateTextureFromSurface(renderer, surf);
+    SDL_FreeSurface(surf);
+}
 
-class CodeFile : public FileEntry {
-    public:
-        void setIcon(std::string name, SDL_Renderer* renderer) {
-            // surface is the intermediary
-            SDL_Surface *surf = IMG_Load("resrc/images/codefile_icon.png");
-            // create a texture from the surface, then delete the surface (no longer needed)
-            data.icon = SDL_CreateTextureFromSurface(renderer, surf);
-            SDL_FreeSurface(surf);
-        }
-};
-
-class OtherFile : public FileEntry {
-    public:
-        void setIcon(std::string name, SDL_Renderer* renderer) {
-            // surface is the intermediary
-            SDL_Surface *surf = IMG_Load("resrc/images/otherfile_icon.png");
-            // create a texture from the surface, then delete the surface (no longer needed)
-            data.icon = SDL_CreateTextureFromSurface(renderer, surf);
-            SDL_FreeSurface(surf);
-        }
-};
+void OtherFile::setIcon(std::string name, SDL_Renderer* renderer) {
+    // surface is the intermediary
+    SDL_Surface *surf = IMG_Load("resrc/images/otherfile_icon.png");
+    // create a texture from the surface, then delete the surface (no longer needed)
+    data.icon = SDL_CreateTextureFromSurface(renderer, surf);
+    SDL_FreeSurface(surf);
+}

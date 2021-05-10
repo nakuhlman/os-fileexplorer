@@ -8,11 +8,6 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include "entries.h"
-#include <algorithm>
-#include <iostream>
-#include <string>
-#include <dirent.h>
-#include <sys/stat.h>
 
 #define WIDTH 800
 #define HEIGHT 600
@@ -30,7 +25,7 @@ std::vector<FileEntry> ExplorerEntries;
 
 void initialize(SDL_Renderer *renderer, AppData *data_ptr);
 void render(SDL_Renderer *renderer, AppData *data_ptr);
-void listDirectory(std::string dirname);
+void getDirectoryEntries(std::string dirname, SDL_Renderer* renderer);
 
 int main(int argc, char **argv)
 {
@@ -55,7 +50,7 @@ int main(int argc, char **argv)
     SDL_Event event;
     SDL_WaitEvent(&event);
 
-    listDirectory("/home/nkuhlman/");
+    getDirectoryEntries("/home/nkuhlman/", renderer);
     while (event.type != SDL_QUIT)
     {
         SDL_WaitEvent(&event);
@@ -72,7 +67,7 @@ int main(int argc, char **argv)
 }
 
 // Initializes the rendering color and gathers AppData
-void initialize(SDL_Renderer *renderer, AppData *data_ptr)
+void initialize(SDL_Renderer* renderer, AppData* data_ptr)
 {
     // set color of background when erasing frame
     SDL_SetRenderDrawColor(renderer, 235, 235, 235, 255);
@@ -93,7 +88,7 @@ void initialize(SDL_Renderer *renderer, AppData *data_ptr)
 }
 
 // Uses AppData to render objects and phrases to the window
-void render(SDL_Renderer *renderer, AppData *data_ptr)
+void render(SDL_Renderer* renderer, AppData* data_ptr)
 {
     // reset render color to gray
     SDL_SetRenderDrawColor(renderer, 235, 235, 235, 255);
@@ -173,48 +168,107 @@ void render(SDL_Renderer *renderer, AppData *data_ptr)
     SDL_RenderPresent(renderer);
 }
 
-void listDirectory(std::string dirname)
+void getDirectoryEntries(std::string dirname, SDL_Renderer* renderer)
 {
+    // Struct containing the information about the current directory
     struct stat info;
+    // Gather information about the current directory and store it in 'info'
     int err = stat(dirname.c_str(), &info);
+    // As long as the passed-in dirname matched with a valid directory, start looking at that directory's contents
     if (err == 0 && S_ISDIR(info.st_mode))
     {
+        // Stores information about the files in the current directory
         std::vector<std::string> files;
         DIR* dir = opendir(dirname.c_str());
         struct dirent *entry;
+        // Read in the contents of the directory to the 'files' vector
         while ((entry = readdir(dir)) != NULL) {
             files.push_back(entry->d_name);
         }
         closedir(dir);
 
-        // Sort the files in the files vector using the sort() function
+        // Sort the files in the files vector in alphabetical order using the sort() function
         std::sort(files.begin(), files.end());
         
-        // PATH TO FILE = ""
+        // Stores information about each individual entry (file or another directory) within the current directory
         struct stat file_info;
-        for(int i = 0; i < files.size(); i++) {
-            // (dirname + "/" + 
-            std::string filepath = dirname + "/" + files[i].c_str();
-            err = stat(filepath.c_str(), &file_info);
-            if(err) {
-                fprintf(stderr, "You're not supposed to be in here!\n");
-                
-            } else {
-             
-                if(S_ISDIR(file_info.st_mode)) {
-                    // DIRECTORY
-                    printf("%s (directory)\n", files[i].c_str());
-                } else {
-                    // NOT A DIRECTORY
-                    printf("%s(%ld bytes)\n", files[i].c_str(), file_info.st_size);
-                }
-            }
 
+        // Loop through all the files that were read in
+        for(int i = 0; i < files.size(); i++) {
+            std::string curfile_name = files[i];
+            std::string curfile_path = dirname + "/" + files[i].c_str();
+            int curfile_size = file_info.st_size;
+            std::string curfile_perms = "rwxrr"; // temporary test (need a function for finding perms, using stat + S_..)
+
+            err = stat(curfile_path.c_str(), &file_info);
+            if(err == 1) { std::cout << "DEBUG MSG: something went wrong obtaining file info" << std::endl;}
+
+            /* THE CURRENT ENTRY IS A DIRECTORY */
+            if(S_ISDIR(file_info.st_mode)) {
+
+                // Create an instance of FileEntry::Directory, constructing it with values parsed from the current file
+
+                // Add the FileEntry::Directory to the ExplorerEntries array 
+
+
+            /* THE CURRENT ENTRY IS A REGULAR FILE */
+            } else if(S_ISREG(file_info.st_mode)) {
+
+                // Find the "." character in the current file name
+                std::size_t pos = files[i].find(".");     
+                // Make a substring of the current file's extension by making a substring from "." to the end of the string
+                std::string extension = files[i].substr(pos);
+
+                /* EXECUTABLE (the current user has execute permissions (what about groups and others?)) */
+                if(file_info.st_mode & S_IXUSR) {
+                    // Create an instance of FileEntry::Executable, constructing it with values parsed from the current file
+
+                    // Add the FileEntry::Executable to the ExplorerEntries array 
+                }
+
+                /* IMAGE (file extension matches) */
+                else if(extension == ".jpg" || extension == ".jpeg" || extension == ".png" ||
+                        extension == ".tif" || extension == ".tiff" || extension == ".gif") {                
+
+                    // Create an instance of FileEntry::Image, constructing it with values parsed from the current file
+                    Image img (curfile_name, curfile_size, curfile_path, curfile_perms, renderer);
+
+                    // Add the FileEntry::Image to the ExplorerEntries array 
+                    ExplorerEntries.push_back(img);
+
+                /* VIDEO (file extension matches) */
+                } else if(extension == ".mp4" || extension == ".mov" || extension == ".mkv" ||
+                          extension == ".avi" || extension == ".webm") {
+
+                    // Create an instance of FileEntry::Video, constructing it with values parsed from the current file
+
+                    // Add the FileEntry::Video to the ExplorerEntries array 
+
+                /* CODE FILE (file extension matches) */
+                } else if(extension == ".h" || extension == ".c"    || extension == ".cpp" ||
+                          extension == ".py"|| extension == ".java" || extension == ".js") {
+
+                    // Create an instance of FileEntry::CodeFile, constructing it with values parsed from the current file
+
+                    // Add the FileEntry::CodeFile to the ExplorerEntries array 
+
+                /* OTHER FILE (none of the above) */
+                } else {
+
+                    // Create an instance of FileEntry::OtherFile, constructing it with values parsed from the current file
+
+                    // Add the FileEntry::OtherFile to the ExplorerEntries array 
+
+                }
+
+
+            /* THE CURRENT ENTRY IS NOT A DIRECTORY OR REGULAR FILE */
+            } else { continue; }
         }
     }
     else
     {
-        fprintf(stderr, "Error: directory '%s' not found\n", dirname.c_str());
+        fprintf(stderr, "Error: directory argument passed into getDirectoryEntries '%s' not found\n", dirname.c_str());
     }
 }
 
