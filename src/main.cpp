@@ -7,7 +7,13 @@
 #include <algorithm>
 #include <dirent.h>
 #include <sys/stat.h>
-#include "entries.h"
+#include "CodeFile.h"
+#include "Directory.h"
+#include "Executable.h"
+#include "FileEntry.h"
+#include "Image.h"
+#include "OtherFile.h"
+#include "Video.h"
 
 #define WIDTH 800
 #define HEIGHT 600
