@@ -21,7 +21,7 @@ typedef struct AppData {
 } AppData;
 
 // Vector of FileEntries containing the various objects whose data will be rendered
-std::vector<FileEntry> ExplorerEntries;
+std::vector<FileEntry*> ExplorerEntries;
 
 void initialize(SDL_Renderer *renderer, AppData *data_ptr);
 void render(SDL_Renderer *renderer, AppData *data_ptr);
@@ -163,7 +163,6 @@ void render(SDL_Renderer* renderer, AppData* data_ptr)
     SDL_SetRenderDrawColor(renderer, 81, 12, 118, 255);
     SDL_RenderFillRect(renderer, &sidebar);
 
-
     // show rendered frame
     SDL_RenderPresent(renderer);
 }
@@ -202,16 +201,20 @@ void getDirectoryEntries(std::string dirname, SDL_Renderer* renderer)
 
             err = stat(curfile_path.c_str(), &file_info);
             if(err == 1) { std::cout << "DEBUG MSG: something went wrong obtaining file info" << std::endl;}
-
+            
+            /************************************/
             /* THE CURRENT ENTRY IS A DIRECTORY */
+            /************************************/
             if(S_ISDIR(file_info.st_mode)) {
 
                 // Create an instance of FileEntry::Directory, constructing it with values parsed from the current file
-
+                Directory* dir = new Directory(curfile_name, curfile_size, curfile_path, curfile_perms, renderer);
                 // Add the FileEntry::Directory to the ExplorerEntries array 
+                ExplorerEntries.push_back(dir);
 
-
+            /***************************************/
             /* THE CURRENT ENTRY IS A REGULAR FILE */
+            /***************************************/
             } else if(S_ISREG(file_info.st_mode)) {
 
                 // Find the "." character in the current file name
@@ -231,8 +234,7 @@ void getDirectoryEntries(std::string dirname, SDL_Renderer* renderer)
                         extension == ".tif" || extension == ".tiff" || extension == ".gif") {                
 
                     // Create an instance of FileEntry::Image, constructing it with values parsed from the current file
-                    Image img (curfile_name, curfile_size, curfile_path, curfile_perms, renderer);
-
+                    Image* img = new Image(curfile_name, curfile_size, curfile_path, curfile_perms, renderer);
                     // Add the FileEntry::Image to the ExplorerEntries array 
                     ExplorerEntries.push_back(img);
 
@@ -241,26 +243,27 @@ void getDirectoryEntries(std::string dirname, SDL_Renderer* renderer)
                           extension == ".avi" || extension == ".webm") {
 
                     // Create an instance of FileEntry::Video, constructing it with values parsed from the current file
-
+                    Video* vid = new Video(curfile_name, curfile_size, curfile_path, curfile_perms, renderer);
                     // Add the FileEntry::Video to the ExplorerEntries array 
+                    ExplorerEntries.push_back(vid);
 
                 /* CODE FILE (file extension matches) */
                 } else if(extension == ".h" || extension == ".c"    || extension == ".cpp" ||
                           extension == ".py"|| extension == ".java" || extension == ".js") {
 
                     // Create an instance of FileEntry::CodeFile, constructing it with values parsed from the current file
-
+                    CodeFile* code = new CodeFile(curfile_name, curfile_size, curfile_path, curfile_perms, renderer);
                     // Add the FileEntry::CodeFile to the ExplorerEntries array 
+                    ExplorerEntries.push_back(code);
 
                 /* OTHER FILE (none of the above) */
                 } else {
 
                     // Create an instance of FileEntry::OtherFile, constructing it with values parsed from the current file
-
+                    OtherFile* other = new OtherFile(curfile_name, curfile_size, curfile_path, curfile_perms, renderer);
                     // Add the FileEntry::OtherFile to the ExplorerEntries array 
-
+                    ExplorerEntries.push_back(other);
                 }
-
 
             /* THE CURRENT ENTRY IS NOT A DIRECTORY OR REGULAR FILE */
             } else { continue; }

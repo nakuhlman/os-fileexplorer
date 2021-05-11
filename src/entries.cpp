@@ -47,7 +47,7 @@ void FileEntry::createPermissionsTexture(std::string permissions, SDL_Renderer* 
 /**  these classes inherit from FileEntry, but also provide  **/
 /**    specific implementations of purely virtual methods    **/
 /**************************************************************/
-     
+
 // Set the icon for a directory
 void Directory::setIcon(std::string name, SDL_Renderer* renderer) {
     // surface is the intermediary
@@ -86,7 +86,7 @@ void CodeFile::setIcon(std::string name, SDL_Renderer* renderer) {
     // surface is the intermediary
     SDL_Surface *surf = IMG_Load("resrc/images/codefile_icon.png");
     // create a texture from the surface, then delete the surface (no longer needed)
-    SDL_Data.icon = SDL_CreateTextureFromSurface(renderer, surf);
+    data.icon = SDL_CreateTextureFromSurface(renderer, surf);
     SDL_FreeSurface(surf);
 }
 

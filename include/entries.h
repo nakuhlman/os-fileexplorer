@@ -23,64 +23,59 @@ typedef struct SDL_Data {
 /* Base class for file explorer entries (an instance of this class cannot be created) */
 class FileEntry {
     public:
-        // Constructors
-        FileEntry();
+        // Constructor
         FileEntry(std::string name, int size, std::string path, std::string permissions, SDL_Renderer* renderer);
-
-        // Destructor
-        virtual ~FileEntry();
 
         // Concrete methods
         void createNameTexture(std::string name, SDL_Renderer* renderer);
         void createSizeTexture(int size, SDL_Renderer* renderer);
         void createPermissionsTexture(std::string permissions, SDL_Renderer* renderer);
+        virtual void setIcon(std::string, SDL_Renderer*) = 0;
 
-        // Purely virtual method that will be defined uniquely by each subclass of FileEntry
-        virtual void setIcon() = 0;
-
-    private:
+    protected:
         SDL_Data data;
         int size_in_bytes;
         std::string filepath;
         std::vector<char> permissions;
 };
 
+
 class Directory : public FileEntry {
     public:
         using FileEntry::FileEntry;
         // Set the icon for a directory
-        void setIcon(std::string name, SDL_Renderer* renderer);
+        void setIcon(std::string name, SDL_Renderer* renderer) override;
 };
 
 class Executable : public FileEntry {
     public:
         using FileEntry::FileEntry;
         // Set the icon for an executable
-        void setIcon(std::string name, SDL_Renderer* renderer);
+        void setIcon(std::string name, SDL_Renderer* renderer) override;
 };
 
 class Image : public FileEntry {
     public:
         using FileEntry::FileEntry;
-        void setIcon(std::string name, SDL_Renderer* renderer);
+        void setIcon(std::string name, SDL_Renderer* renderer) override;
 };
 
 class Video : public FileEntry {
     public:
         using FileEntry::FileEntry;
-        void setIcon(std::string name, SDL_Renderer* renderer);
+        void setIcon(std::string name, SDL_Renderer* renderer) override;
 };
 
 class CodeFile : public FileEntry {
     public:
         using FileEntry::FileEntry;
-        void setIcon(std::string name, SDL_Renderer* renderer);
+        void setIcon(std::string name, SDL_Renderer* renderer) override;
 };
 
 class OtherFile : public FileEntry {
     public:
         using FileEntry::FileEntry;
-        void setIcon(std::string name, SDL_Renderer* renderer);
+        void setIcon(std::string name, SDL_Renderer* renderer) override;
 };
 
 #endif
