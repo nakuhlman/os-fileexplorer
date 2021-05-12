@@ -6,7 +6,7 @@ make all --print-data-base --no-builtin-variables --no-builtin-rules --question
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Tue May 11 10:20:20 2021
+# Make data base, printed on Tue May 11 21:22:36 2021
 
 # Variables
 
@@ -45,11 +45,11 @@ CURDIR := /home/nkuhlman/Desktop/CISC310/Programs/os-fileexplorer
 # makefile
 SHELL = /bin/sh
 # environment
-SNAP_DATA = /var/snap/code/63
+SNAP_DATA = /var/snap/code/64
 # environment
 VSCODE_NLS_CONFIG = {"locale":"en-us","availableLanguages":{},"_languagePackSupport":true}
 # environment
-JOURNAL_STREAM = 8:35589
+JOURNAL_STREAM = 8:38534
 # environment
 XDG_CONFIG_DIRS = /etc/xdg/xdg-ubuntu:/etc/xdg
 # environment
@@ -73,11 +73,11 @@ DBUS_SESSION_BUS_ADDRESS = unix:path=/run/user/1000/bus
 # environment
 VSCODE_VERBOSE_LOGGING = true
 # environment
-_ = /snap/code/63/usr/share/code/code
+_ = /snap/code/64/usr/share/code/code
 # makefile (from 'Makefile', line 11)
 OBJS = $(addprefix $(OBJDIR)/, main.o entries.o)
 # environment
-MANAGERPID = 1424
+MANAGERPID = 1789
 # environment
 CLUTTER_IM_MODULE = ibus
 # environment
@@ -87,7 +87,7 @@ mkdirs :=
 # environment
 VSCODE_CWD = /home/nkuhlman
 # environment
-GSETTINGS_SCHEMA_DIR = /snap/code/63/usr/share/glib-2.0/schemas
+GSETTINGS_SCHEMA_DIR = /snap/code/64/usr/share/glib-2.0/schemas
 # default
 MAKE_HOST := x86_64-pc-linux-gnu
 # environment
@@ -95,15 +95,15 @@ PATH = /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/
 # environment
 GPG_AGENT_INFO = /run/user/1000/gnupg/S.gpg-agent:0:1
 # environment
-SESSION_MANAGER = local/CISC310-VM:@/tmp/.ICE-unix/1800,unix/CISC310-VM:/tmp/.ICE-unix/1800
+SESSION_MANAGER = local/CISC310-VM:@/tmp/.ICE-unix/2168,unix/CISC310-VM:/tmp/.ICE-unix/2168
 # environment
 XDG_RUNTIME_DIR = /run/user/1000
 # environment
 GDK_PIXBUF_MODULE_FILE = /home/nkuhlman/snap/code/common/.cache/gdk-pixbuf-loaders.cache
 # environment
-SNAP = /snap/code/63
+SNAP = /snap/code/64
 # environment
-SNAP_VERSION = cfa2e218
+SNAP_VERSION = e713fe9b
 # environment
 XDG_MENU_PREFIX = gnome-
 # environment
@@ -113,9 +113,9 @@ DISABLE_WAYLAND = 1
 # environment
 VSCODE_CRASH_REPORTER_START_OPTIONS = {"companyName":"Microsoft","productName":"VSCode","submitURL":"appcenter://code?aid=fba07a4d-84bd-4fc8-a125-9640fc8ce171&uid=010be0dd-024b-47e9-a451-94b07cce4f40&iid=010be0dd-024b-47e9-a451-94b07cce4f40&sid=010be0dd-024b-47e9-a451-94b07cce4f40","uploadToServer":true}
 # environment
-INVOCATION_ID = b502f2136b4a411b8f11d2f004ae737b
+INVOCATION_ID = 521a4be895ee4b678b6363aeaf18504f
 # environment
-GDK_PIXBUF_MODULEDIR = /snap/code/63/usr/lib/x86_64-linux-gnu/gdk-pixbuf-2.0/2.10.0/loaders
+GDK_PIXBUF_MODULEDIR = /snap/code/64/usr/lib/x86_64-linux-gnu/gdk-pixbuf-2.0/2.10.0/loaders
 # makefile (from 'Makefile', line 5)
 LIB = -lSDL2 -lSDL2_image -lSDL2_ttf
 # default
@@ -127,7 +127,7 @@ XDG_SESSION_DESKTOP = ubuntu
 # environment
 SSH_AUTH_SOCK = /run/user/1000/keyring/ssh
 # environment
-GIO_LAUNCHED_DESKTOP_FILE_PID = 3400
+GIO_LAUNCHED_DESKTOP_FILE_PID = 2580
 # automatic
 %F = $(notdir $%)
 # environment
@@ -145,7 +145,7 @@ PWD = /home/nkuhlman/Desktop/CISC310/Programs/os-fileexplorer
 # default
 .LOADED := 
 # environment
-SSH_AGENT_PID = 1645
+SSH_AGENT_PID = 2009
 # environment
 ORIGINAL_XDG_CURRENT_DESKTOP = ubuntu:GNOME
 # environment
@@ -187,7 +187,7 @@ MAKECMDGOALS := all
 # environment
 QT_IM_MODULE = ibus
 # environment
-SNAP_USER_DATA = /home/nkuhlman/snap/code/63
+SNAP_USER_DATA = /home/nkuhlman/snap/code/64
 # environment
 SHLVL = 0
 # makefile (from 'Makefile', line 9)
@@ -195,7 +195,7 @@ BINDIR = bin
 # environment
 GNOME_SHELL_SESSION_MODE = ubuntu
 # environment
-VSCODE_IPC_HOOK_EXTHOST = /run/user/1000/vscode-ipc-808f5d9b-b328-4673-9956-7d81dcf4e6c7.sock
+VSCODE_IPC_HOOK_EXTHOST = /run/user/1000/vscode-ipc-14f7c8c9-c0c7-4b69-9df7-cd430fec6614.sock
 # makefile (from 'Makefile', line 12)
 EXEC = $(addprefix $(BINDIR)/, fileexplorer)
 # default
@@ -203,7 +203,7 @@ MAKE_VERSION := 4.2.1
 # environment
 USER = nkuhlman
 # environment
-SNAP_REVISION = 63
+SNAP_REVISION = 64
 # makefile
 .DEFAULT_GOAL := all
 # makefile (from 'Makefile', line 4)
@@ -215,13 +215,13 @@ XDG_CURRENT_DESKTOP = Unity
 # default
 MAKE_COMMAND := make
 # environment
-VSCODE_NODE_CACHED_DATA_DIR = /home/nkuhlman/.config/Code/CachedData/cfa2e218100323074ac1948c885448fdf4de2a7f
+VSCODE_NODE_CACHED_DATA_DIR = /home/nkuhlman/.config/Code/CachedData/e713fe9b05fc24facbec8f34fb1017133858842b
 # default
 .VARIABLES := 
 # automatic
 *F = $(notdir $*)
 # environment
-VSCODE_IPC_HOOK = /run/user/1000/vscode-ca23d3ef-1.56.0-main.sock
+VSCODE_IPC_HOOK = /run/user/1000/vscode-ca23d3ef-1.56.1-main.sock
 # environment
 BAMF_DESKTOP_FILE_HINT = /var/lib/snapd/desktop/applications/code_code.desktop
 # makefile
@@ -277,12 +277,12 @@ WINDOWPATH = 2
 # environment
 GJS_DEBUG_OUTPUT = stderr
 # default
- 
 .RECIPEPREFIX := 
+ 
 # environment
 LANG = C
 # environment
-VSCODE_PID = 3448
+VSCODE_PID = 2849
 # variable set hash-table stats:
 # Load=136/1024=13%, Rehash=0, Collisions=29/180=16%
 
@@ -325,7 +325,7 @@ obj/entries.o:
 obj/main.o: src/main.cpp
 #  Implicit rule search has been done.
 #  Implicit/static pattern stem: 'main'
-#  File does not exist.
+#  Last modified 2021-05-11 13:49:15.652310319
 #  File has been updated.
 #  Needs to be updated (-q is set).
 # automatic
@@ -358,7 +358,7 @@ Makefile:
 
 bin/fileexplorer: obj/main.o obj/entries.o
 #  Implicit rule search has not been done.
-#  File does not exist.
+#  Last modified 2021-05-11 13:49:16.568310348
 #  File has been updated.
 #  Needs to be updated (-q is set).
 # variable set hash-table stats:
@@ -382,7 +382,7 @@ clean:
 # Not a target:
 src/main.cpp:
 #  Implicit rule search has been done.
-#  Last modified 2021-05-11 00:00:25.595213591
+#  Last modified 2021-05-11 21:22:35.916471525
 #  File has been updated.
 #  Successfully updated.
 
@@ -400,6 +400,6 @@ src/main.cpp:
 # strcache performance: lookups = 39 / hit rate = 33%
 # hash-table stats:
 # Load=26/8192=0%, Rehash=0, Collisions=2/39=5%
-# Finished Make data base on Tue May 11 10:20:20 2021
+# Finished Make data base on Tue May 11 21:22:36 2021
 
  
