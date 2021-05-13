@@ -23,18 +23,22 @@ typedef struct SDL_Data {
 class FileEntry {
     public:
         // Constructor
-        FileEntry(std::string name, int size, std::string path, std::string permissions, SDL_Renderer* renderer, TTF_Font* font);
+        FileEntry(std::string name, std::string type, int size, std::string path, std::string permissions, SDL_Renderer* renderer, TTF_Font* font);
 
         // Concrete methods
         void createNameTexture(std::string name, SDL_Renderer* renderer, TTF_Font* font);
         void createSizeTexture(int size, SDL_Renderer* renderer, TTF_Font* font);
         void createPermissionsTexture(std::string permissions, SDL_Renderer* renderer, TTF_Font* font);
+        void setCoordinates(int x1, int x2, int y1, int y2, std::string element);
         virtual void setIcon(SDL_Renderer*) = 0;
         
         SDL_Data data;
         int size_in_bytes;
         std::string filepath;
         std::vector<char> permissions;
+        std::string entrytype;
+        std::vector<int> icon_coordinates;
+        std::vector<int> name_coordinates;
 };
 
 

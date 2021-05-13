@@ -17,7 +17,7 @@ typedef struct AppData {
     TTF_Font *font;
 
     SDL_Texture* home;
-    SDL_Texture* backarrow;
+    SDL_Texture* desktop;
     SDL_Texture* recursiveview;
     SDL_Texture* filename_header;
     SDL_Texture* size_header;
@@ -33,6 +33,7 @@ std::vector<FileEntry*> ExplorerEntries;
 void initialize(SDL_Renderer *renderer, AppData *data_ptr);
 void render(SDL_Renderer *renderer, AppData *data_ptr);
 void getDirectoryEntries(std::string dirname, SDL_Renderer* renderer, TTF_Font* font);
+std::string parseMouseClick(int mouse_click_x, int mouse_click_y);
 
 int main(int argc, char **argv)
 {
@@ -56,16 +57,28 @@ int main(int argc, char **argv)
     AppData data;
     initialize(renderer, &data);
     getDirectoryEntries("/home/nkuhlman/", renderer, data.font);
-    std::cout << "Got here bois" << std::endl;
+
     render(renderer, &data);
     SDL_Event event;
     SDL_WaitEvent(&event);
 
+    
     while (event.type != SDL_QUIT)
     {
+        if(event.type == SDL_MOUSEBUTTONDOWN) {
+            int mouse_click_x = event.button.x;
+            int mouse_click_y = event.button.y;
+
+            std::string next_filepath = parseMouseClick(mouse_click_x, mouse_click_y);
+            if(next_filepath != "") {
+                ExplorerEntries.clear();
+                getDirectoryEntries(next_filepath, renderer, data.font);
+            }
+        }
         SDL_WaitEvent(&event);
         render(renderer, &data);
     }
+
 
     // clean up
     SDL_DestroyRenderer(renderer);
@@ -86,8 +99,8 @@ void initialize(SDL_Renderer* renderer, AppData* data_ptr)
 
     SDL_Surface *surf = IMG_Load("resrc/images/home_icon.png");
     data_ptr->home = SDL_CreateTextureFromSurface(renderer, surf);
-    surf = IMG_Load("resrc/images/back_icon.png");
-    data_ptr->backarrow = SDL_CreateTextureFromSurface(renderer, surf);
+    surf = IMG_Load("resrc/images/desktop_icon.png");
+    data_ptr->desktop = SDL_CreateTextureFromSurface(renderer, surf);
     surf = IMG_Load("resrc/images/recursive_icon.png");
     data_ptr->recursiveview = SDL_CreateTextureFromSurface(renderer, surf);
     
@@ -153,39 +166,46 @@ void render(SDL_Renderer* renderer, AppData* data_ptr)
     SDL_SetRenderDrawColor(renderer, 81, 12, 118, 255);
     SDL_RenderFillRect(renderer, &sidebar1);
 
-    SDL_Rect backarrow = {8, 7, 40, 40};
-    SDL_RenderCopy(renderer, data_ptr->backarrow, NULL, &backarrow);
-
-    SDL_Rect home = {8, 67, 40, 40}; 
+    SDL_Rect home = {8, 7, 40, 40};
     SDL_RenderCopy(renderer, data_ptr->home, NULL, &home);
+
+    SDL_Rect desktop = {8, 67, 40, 40}; 
+    SDL_RenderCopy(renderer, data_ptr->desktop, NULL, &desktop);
 
     SDL_Rect recursiveview = {8, 127, 40, 40};
     SDL_RenderCopy(renderer, data_ptr->recursiveview, NULL, &recursiveview);
 
     // Create a container for icons: {x, y, width, height}
-    SDL_Rect first_icon_container = {75, 67, 35, 35};
+    SDL_Rect icon_container = {75, 67, 35, 35};
     
-    SDL_Rect first_name_container = {135, 67};
-    SDL_Rect first_size_container = {450, 67};
-    SDL_Rect first_perms_container = {635, 67};
+    SDL_Rect name_container = {135, 67};
+    SDL_Rect size_container = {450, 67};
+    SDL_Rect perms_container = {635, 67};
 
-    for(int i = 2; i < ExplorerEntries.size(); i++) {
-        SDL_RenderCopy(renderer, ExplorerEntries[i]->data.icon, NULL, &first_icon_container);
-        first_icon_container.y += 45;
+    for(int i = 0; i < ExplorerEntries.size(); i++) {
+        ExplorerEntries[i]->setCoordinates(icon_container.x, icon_container.x + icon_container.w, 
+                                           icon_container.y, icon_container.y + icon_container.h, "icon");
+        SDL_RenderCopy(renderer, ExplorerEntries[i]->data.icon, NULL, &icon_container);
+        icon_container.y += 45;
 
-        SDL_QueryTexture(ExplorerEntries[i]->data.name, NULL, NULL, &(first_name_container.w), &(first_name_container.h));
-        SDL_RenderCopy(renderer, ExplorerEntries[i]->data.name, NULL, &first_name_container);
-        first_name_container.y += 45;
+        SDL_QueryTexture(ExplorerEntries[i]->data.name, NULL, NULL, &(name_container.w), &(name_container.h));
+        ExplorerEntries[i]->setCoordinates(name_container.x, name_container.x + name_container.w, 
+                                           name_container.y, name_container.y + name_container.h, "name");
+        SDL_RenderCopy(renderer, ExplorerEntries[i]->data.name, NULL, &name_container);
+        name_container.y += 45;
 
-        SDL_QueryTexture(ExplorerEntries[i]->data.size, NULL, NULL, &(first_size_container.w), &(first_size_container.h));
-        SDL_RenderCopy(renderer, ExplorerEntries[i]->data.size, NULL, &first_size_container);
-        first_size_container.y += 45;
+        if(ExplorerEntries[i]->entrytype != "dir") {
+            SDL_QueryTexture(ExplorerEntries[i]->data.size, NULL, NULL, &(size_container.w), &(size_container.h));
+            SDL_RenderCopy(renderer, ExplorerEntries[i]->data.size, NULL, &size_container);
+        }
+        size_container.y += 45;
 
-        SDL_QueryTexture(ExplorerEntries[i]->data.permissions, NULL, NULL, &(first_perms_container.w), &(first_perms_container.h));
-        SDL_RenderCopy(renderer, ExplorerEntries[i]->data.permissions, NULL, &first_perms_container);
-        first_perms_container.y += 45;
+        if(ExplorerEntries[i]->entrytype != "dir") {
+            SDL_QueryTexture(ExplorerEntries[i]->data.permissions, NULL, NULL, &(perms_container.w), &(perms_container.h));
+            SDL_RenderCopy(renderer, ExplorerEntries[i]->data.permissions, NULL, &perms_container);
+        }
+        perms_container.y += 45;
     }
-
 
     // show rendered frame
     SDL_RenderPresent(renderer);
@@ -218,7 +238,10 @@ void getDirectoryEntries(std::string dirname, SDL_Renderer* renderer, TTF_Font* 
 
         // Loop through all the files that were read in
         for(int i = 0; i < files.size(); i++) {
+            // Get the file name; ignore the "." directory by skipping the current iteration
             std::string curfile_name = files[i].c_str();
+            if(curfile_name == ".") { continue; }
+            // Get the file path and size
             std::string curfile_path = dirname + "/" + files[i].c_str();
             int curfile_size = file_info.st_size;
             std::string curfile_perms = "rwxrwxrwx"; // temporary test (need a function for finding perms, using stat + S_..)
@@ -229,9 +252,8 @@ void getDirectoryEntries(std::string dirname, SDL_Renderer* renderer, TTF_Font* 
             /* THE CURRENT ENTRY IS A DIRECTORY */
             /************************************/
             if(S_ISDIR(file_info.st_mode)) {
-                std::cout << files[i] << " is a directory" << std::endl;
                 // Create an instance of FileEntry::Directory, constructing it with values parsed from the current file
-                Directory* dir = new Directory(curfile_name, curfile_size, curfile_path, curfile_perms, renderer, font);
+                Directory* dir = new Directory(curfile_name, "dir", curfile_size, curfile_path, curfile_perms, renderer, font);
                 dir->setIcon(renderer);
                 // Add the FileEntry::Directory to the ExplorerEntries array 
                 ExplorerEntries.push_back(dir);
@@ -250,7 +272,7 @@ void getDirectoryEntries(std::string dirname, SDL_Renderer* renderer, TTF_Font* 
                 if(file_info.st_mode & S_IXUSR) {
                     std::cout << files[i] << " is a exe" << std::endl;
                     // Create an instance of FileEntry::Executable, constructing it with values parsed from the current file
-                    Executable* exe = new Executable(curfile_name, curfile_size, curfile_path, curfile_perms, renderer, font);
+                    Executable* exe = new Executable(curfile_name, "exe", curfile_size, curfile_path, curfile_perms, renderer, font);
                     exe->setIcon(renderer);
                     // Add the FileEntry::Executable to the ExplorerEntries array 
                     ExplorerEntries.push_back(exe);
@@ -259,9 +281,8 @@ void getDirectoryEntries(std::string dirname, SDL_Renderer* renderer, TTF_Font* 
                 /* IMAGE (file extension matches) */
                 else if(extension == ".jpg" || extension == ".jpeg" || extension == ".png" ||
                         extension == ".tif" || extension == ".tiff" || extension == ".gif") {                
-                    std::cout << files[i] << " is an image" << std::endl;
                     // Create an instance of FileEntry::Image, constructing it with values parsed from the current file
-                    Image* img = new Image(curfile_name, curfile_size, curfile_path, curfile_perms, renderer, font);
+                    Image* img = new Image(curfile_name, "img", curfile_size, curfile_path, curfile_perms, renderer, font);
                     img->setIcon(renderer);
                     // Add the FileEntry::Image to the ExplorerEntries array 
                     ExplorerEntries.push_back(img);
@@ -269,10 +290,9 @@ void getDirectoryEntries(std::string dirname, SDL_Renderer* renderer, TTF_Font* 
                 /* VIDEO (file extension matches) */
                 } else if(extension == ".mp4" || extension == ".mov" || extension == ".mkv" ||
                           extension == ".avi" || extension == ".webm") {
-                              std::cout << files[i] << " is a video" << std::endl;
 
                     // Create an instance of FileEntry::Video, constructing it with values parsed from the current file
-                    Video* vid = new Video(curfile_name, curfile_size, curfile_path, curfile_perms, renderer, font);
+                    Video* vid = new Video(curfile_name, "vid", curfile_size, curfile_path, curfile_perms, renderer, font);
                     vid->setIcon(renderer);
                     // Add the FileEntry::Video to the ExplorerEntries array 
                     ExplorerEntries.push_back(vid);
@@ -280,18 +300,18 @@ void getDirectoryEntries(std::string dirname, SDL_Renderer* renderer, TTF_Font* 
                 /* CODE FILE (file extension matches) */
                 } else if(extension == ".h" || extension == ".c"    || extension == ".cpp" ||
                           extension == ".py"|| extension == ".java" || extension == ".js") {
-                    std::cout << files[i] << " is a codefile" << std::endl;
+
                     // Create an instance of FileEntry::CodeFile, constructing it with values parsed from the current file
-                    CodeFile* code = new CodeFile(curfile_name, curfile_size, curfile_path, curfile_perms, renderer, font);
+                    CodeFile* code = new CodeFile(curfile_name, "code", curfile_size, curfile_path, curfile_perms, renderer, font);
                     code->setIcon(renderer);
                     // Add the FileEntry::CodeFile to the ExplorerEntries array 
                     ExplorerEntries.push_back(code);
 
                 /* OTHER FILE (none of the above) */
                 } else {
-                    std::cout << files[i] << " is another type of file" << std::endl;
+
                     // Create an instance of FileEntry::OtherFile, constructing it with values parsed from the current file
-                    OtherFile* other = new OtherFile(curfile_name, curfile_size, curfile_path, curfile_perms, renderer, font);
+                    OtherFile* other = new OtherFile(curfile_name, "other", curfile_size, curfile_path, curfile_perms, renderer, font);
                     other->setIcon(renderer);
                     // Add the FileEntry::OtherFile to the ExplorerEntries array 
                     ExplorerEntries.push_back(other);
@@ -307,6 +327,44 @@ void getDirectoryEntries(std::string dirname, SDL_Renderer* renderer, TTF_Font* 
     }
 }
 
+std::string parseMouseClick(int mouse_click_x, int mouse_click_y) {
+
+    /**** CLICKED ON HOME ICON ****/
+    if((mouse_click_x >= 8 && mouse_click_x <= 48) && (mouse_click_y >= 7 && mouse_click_y <= 47)) {
+        // return to the home directory
+        std::cout << "You clicked on the HOME button" << std::endl;
+        return "/home/nkuhlman/";
+    }
+    /**** CLICKED ON ***/
+    else if((mouse_click_x >= 8 && mouse_click_x <= 48) && (mouse_click_y >= 67 && mouse_click_y <= 107))  {
+        std::cout << "You clicked on the DESKTOP button" << std::endl;
+        return "/home/nkuhlman/Desktop/";
+
+    }
+    /**** CLICKED ON RECURSIVE VIEW ****/
+    else if((mouse_click_x >= 8 && mouse_click_x <= 48) && (mouse_click_y >= 127 && mouse_click_y <= 167))  {
+        std::cout << "You clicked on the RECURSIVE VIEW button" << std::endl;
+        return "";
+        // render the current directory in recursive view
+        // set recursive mode flag
+    } else {
+        for(int i = 0; i < ExplorerEntries.size(); i++) {
+            if((mouse_click_x >= ExplorerEntries[i]->icon_coordinates[0] && mouse_click_x <= ExplorerEntries[i]->icon_coordinates[1]) &&
+            (mouse_click_y >= ExplorerEntries[i]->icon_coordinates[2] && mouse_click_y <= ExplorerEntries[i]->icon_coordinates[3])) {
+                    std::cout << "You clicked on the ICON of" << ExplorerEntries[i]->filepath << std::endl;
+                    return ExplorerEntries[i]->filepath;
+            }
+
+            if((mouse_click_x >= ExplorerEntries[i]->name_coordinates[0] && mouse_click_x <= ExplorerEntries[i]->name_coordinates[1]) &&
+            (mouse_click_y >= ExplorerEntries[i]->name_coordinates[2] && mouse_click_y <= ExplorerEntries[i]->name_coordinates[3])) {
+                    std::cout << "You clicked on the NAME of" << ExplorerEntries[i]->filepath << std::endl;
+                    return ExplorerEntries[i]->filepath;
+            }
+        }
+    }
+    std::cout << "You didn't click on an entry name or icon" << std::endl;
+    return "";
+}
 /***** THE FOLLOWING COULD BE HELPFUL FOR RECURSIVE FILE VIEWING LATER ********
 //void listDirectory(std::string dirname, int indent = 0);
 void listDirectory(std::string dirname, int indent)
