@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <dirent.h>
 #include <sys/stat.h>
+#include <unistd.h>
+#include <sys/wait.h>
 #include "entries.h"
 
 #define WIDTH 800   
@@ -37,6 +39,7 @@ std::string parseMouseClick(int mouse_click_x, int mouse_click_y);
 
 int main(int argc, char **argv)
 {
+    std::cout << getenv("USER") << std::endl;
     char *home = getenv("HOME");
     printf("HOME: %s\n", home);
 
@@ -69,10 +72,31 @@ int main(int argc, char **argv)
             int mouse_click_x = event.button.x;
             int mouse_click_y = event.button.y;
 
-            std::string next_filepath = parseMouseClick(mouse_click_x, mouse_click_y);
-            if(next_filepath != "") {
+            std::string next_element = parseMouseClick(mouse_click_x, mouse_click_y);
+            std::cout << "next_element = " << next_element << std::endl;
+            std::string next_element_type = next_element.substr(next_element.find(',') + 1, std::string::npos);
+            std::cout << "next_element_type = " << next_element_type << std::endl;
+            int delimiter_loc = next_element.find(',');
+            if(delimiter_loc != -1) { next_element.erase(delimiter_loc, std::string::npos); }
+
+            if(next_element_type == "" || next_element_type == "dir" || next_element_type == "HOME" || next_element_type == "DESKTOP") {
                 ExplorerEntries.clear();
-                getDirectoryEntries(next_filepath, renderer, data.font);
+                getDirectoryEntries(next_element, renderer, data.font);
+            } else {
+                int pid = fork();
+                std::string open_file_cmd = "xdg-open " + next_element;
+
+                if(pid == -1){
+                    //fork error
+                    std::cout << "Fork Error\n";
+                } else if(pid > 0) {
+                    //parent waits for child
+                    int status;
+                    waitpid(pid, &status, 0);
+                } else if (pid == 0) {
+                    system(open_file_cmd.c_str());
+                    exit(1);
+                }
             }
         }
         SDL_WaitEvent(&event);
@@ -333,18 +357,18 @@ std::string parseMouseClick(int mouse_click_x, int mouse_click_y) {
     if((mouse_click_x >= 8 && mouse_click_x <= 48) && (mouse_click_y >= 7 && mouse_click_y <= 47)) {
         // return to the home directory
         std::cout << "You clicked on the HOME button" << std::endl;
-        return "/home/nkuhlman/";
+        return "/home/nkuhlman/,HOME";
     }
     /**** CLICKED ON ***/
     else if((mouse_click_x >= 8 && mouse_click_x <= 48) && (mouse_click_y >= 67 && mouse_click_y <= 107))  {
         std::cout << "You clicked on the DESKTOP button" << std::endl;
-        return "/home/nkuhlman/Desktop/";
+        return "/home/nkuhlman/Desktop/,DESKTOP";
 
     }
     /**** CLICKED ON RECURSIVE VIEW ****/
     else if((mouse_click_x >= 8 && mouse_click_x <= 48) && (mouse_click_y >= 127 && mouse_click_y <= 167))  {
         std::cout << "You clicked on the RECURSIVE VIEW button" << std::endl;
-        return "";
+        return "R";
         // render the current directory in recursive view
         // set recursive mode flag
     } else {
@@ -352,13 +376,13 @@ std::string parseMouseClick(int mouse_click_x, int mouse_click_y) {
             if((mouse_click_x >= ExplorerEntries[i]->icon_coordinates[0] && mouse_click_x <= ExplorerEntries[i]->icon_coordinates[1]) &&
             (mouse_click_y >= ExplorerEntries[i]->icon_coordinates[2] && mouse_click_y <= ExplorerEntries[i]->icon_coordinates[3])) {
                     std::cout << "You clicked on the ICON of" << ExplorerEntries[i]->filepath << std::endl;
-                    return ExplorerEntries[i]->filepath;
+                    return ExplorerEntries[i]->filepath + "," + ExplorerEntries[i]->entrytype;
             }
 
             if((mouse_click_x >= ExplorerEntries[i]->name_coordinates[0] && mouse_click_x <= ExplorerEntries[i]->name_coordinates[1]) &&
             (mouse_click_y >= ExplorerEntries[i]->name_coordinates[2] && mouse_click_y <= ExplorerEntries[i]->name_coordinates[3])) {
                     std::cout << "You clicked on the NAME of" << ExplorerEntries[i]->filepath << std::endl;
-                    return ExplorerEntries[i]->filepath;
+                    return ExplorerEntries[i]->filepath + "," + ExplorerEntries[i]->entrytype;
             }
         }
     }
