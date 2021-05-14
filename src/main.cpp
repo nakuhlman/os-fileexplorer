@@ -32,6 +32,9 @@ typedef struct AppData {
 // Vector of FileEntries containing the various objects whose data will be rendered
 std::vector<FileEntry*> ExplorerEntries;
 
+std::string user;
+std::string home;
+
 void initialize(SDL_Renderer *renderer, AppData *data_ptr);
 void render(SDL_Renderer *renderer, AppData *data_ptr);
 void getDirectoryEntries(std::string dirname, SDL_Renderer* renderer, TTF_Font* font);
@@ -39,10 +42,6 @@ std::string parseMouseClick(int mouse_click_x, int mouse_click_y);
 
 int main(int argc, char **argv)
 {
-    std::cout << getenv("USER") << std::endl;
-    char *home = getenv("HOME");
-    printf("HOME: %s\n", home);
-
     // initializing SDL as Video
     SDL_Init(SDL_INIT_VIDEO);
     // initialize PNG IMG library
@@ -59,7 +58,7 @@ int main(int argc, char **argv)
     // initialize and perform rendering loop
     AppData data;
     initialize(renderer, &data);
-    getDirectoryEntries("/home/nkuhlman/", renderer, data.font);
+    getDirectoryEntries(home, renderer, data.font);
 
     render(renderer, &data);
     SDL_Event event;
@@ -68,18 +67,18 @@ int main(int argc, char **argv)
     
     while (event.type != SDL_QUIT)
     {
-        if(event.type == SDL_MOUSEBUTTONDOWN) {
+        if(event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT) {
             int mouse_click_x = event.button.x;
             int mouse_click_y = event.button.y;
 
             std::string next_element = parseMouseClick(mouse_click_x, mouse_click_y);
-            std::cout << "next_element = " << next_element << std::endl;
             std::string next_element_type = next_element.substr(next_element.find(',') + 1, std::string::npos);
-            std::cout << "next_element_type = " << next_element_type << std::endl;
             int delimiter_loc = next_element.find(',');
             if(delimiter_loc != -1) { next_element.erase(delimiter_loc, std::string::npos); }
 
-            if(next_element_type == "" || next_element_type == "dir" || next_element_type == "HOME" || next_element_type == "DESKTOP") {
+            if(next_element == "NULL") {
+                // do nothing for this click
+            } else if(next_element_type == "" || next_element_type == "dir" || next_element_type == "HOME" || next_element_type == "DESKTOP") {
                 ExplorerEntries.clear();
                 getDirectoryEntries(next_element, renderer, data.font);
             } else {
@@ -116,6 +115,8 @@ int main(int argc, char **argv)
 // Initializes the rendering color and gathers AppData
 void initialize(SDL_Renderer* renderer, AppData* data_ptr)
 {
+    user = getenv("USER");
+    home = getenv("HOME");
     // set color of background when erasing frame
     SDL_SetRenderDrawColor(renderer, 235, 235, 235, 255);
     // set the font
@@ -267,9 +268,10 @@ void getDirectoryEntries(std::string dirname, SDL_Renderer* renderer, TTF_Font* 
             if(curfile_name == ".") { continue; }
             // Get the file path and size
             std::string curfile_path = dirname + "/" + files[i].c_str();
+            err = stat(curfile_path.c_str(), &file_info);
             int curfile_size = file_info.st_size;
             std::string curfile_perms = "rwxrwxrwx"; // temporary test (need a function for finding perms, using stat + S_..)
-            err = stat(curfile_path.c_str(), &file_info);
+            std::cout << "SIZE FOR " << curfile_name << "IS [" << curfile_size << "]" << std::endl;
             if(err == 1) { std::cout << "DEBUG MSG: something went wrong obtaining file info" << std::endl;}
             
             /************************************/
@@ -357,12 +359,12 @@ std::string parseMouseClick(int mouse_click_x, int mouse_click_y) {
     if((mouse_click_x >= 8 && mouse_click_x <= 48) && (mouse_click_y >= 7 && mouse_click_y <= 47)) {
         // return to the home directory
         std::cout << "You clicked on the HOME button" << std::endl;
-        return "/home/nkuhlman/,HOME";
+        return home + ",HOME";
     }
     /**** CLICKED ON ***/
     else if((mouse_click_x >= 8 && mouse_click_x <= 48) && (mouse_click_y >= 67 && mouse_click_y <= 107))  {
         std::cout << "You clicked on the DESKTOP button" << std::endl;
-        return "/home/nkuhlman/Desktop/,DESKTOP";
+        return home + "/Desktop/,DESKTOP";
 
     }
     /**** CLICKED ON RECURSIVE VIEW ****/
@@ -387,8 +389,11 @@ std::string parseMouseClick(int mouse_click_x, int mouse_click_y) {
         }
     }
     std::cout << "You didn't click on an entry name or icon" << std::endl;
-    return "";
+    return "NULL";
 }
+
+
+
 /***** THE FOLLOWING COULD BE HELPFUL FOR RECURSIVE FILE VIEWING LATER ********
 //void listDirectory(std::string dirname, int indent = 0);
 void listDirectory(std::string dirname, int indent)

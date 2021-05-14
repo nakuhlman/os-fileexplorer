@@ -25,7 +25,22 @@ void FileEntry::createNameTexture(std::string name, SDL_Renderer* renderer, TTF_
 void FileEntry::createSizeTexture(int size, SDL_Renderer* renderer, TTF_Font* font) {
     // 'size' needs to be a string
     char size_as_string[20];
-    sprintf(size_as_string, "%u", size);
+    // Bytes
+    if(size < 1024.0) {
+        sprintf(size_as_string, "%d B", size);
+    // Kilobytes
+    } else if(size >= 1024.0 && size < 1048576.0) {
+        double converted_size = size / 1024.0;
+        sprintf(size_as_string, "%.2f KiB", converted_size);
+    // Megabytes
+    } else if(size >= 1048576.0 && size < 1073741824.0) {
+        double converted_size = size / 1048576.0;
+        sprintf(size_as_string, "%.2f MiB", converted_size);
+    // Gigabytes
+    } else if(size > 1073741824.0) {
+        double converted_size = size / 1073741824.0;
+        sprintf(size_as_string, "%.2f GiB", converted_size);
+    }
 
     SDL_Color size_color = {0, 0, 0}; 
     SDL_Surface *surf = TTF_RenderText_Solid(font, size_as_string, size_color);
