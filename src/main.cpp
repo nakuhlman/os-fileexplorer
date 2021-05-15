@@ -17,28 +17,31 @@
 // Structure containing all data needed for application
 typedef struct AppData {
     TTF_Font *font;
+    TTF_Font *recursive_font;
 
     SDL_Texture* home;
     SDL_Texture* desktop;
     SDL_Texture* recursiveview;
     SDL_Texture* filename_header;
     SDL_Texture* size_header;
-    SDL_Texture* userpermissions_header;
-    SDL_Texture* grouppermissions_header;
-    SDL_Texture* everyonepermissions_header;
+    SDL_Texture* permissions_header;
 
 } AppData;
 
 // Vector of FileEntries containing the various objects whose data will be rendered
 std::vector<FileEntry*> ExplorerEntries;
+std::vector<std::string> RecursiveEntries;
 
 std::string user;
 std::string home;
 
 void initialize(SDL_Renderer *renderer, AppData *data_ptr);
 void render(SDL_Renderer *renderer, AppData *data_ptr);
-void getDirectoryEntries(std::string dirname, SDL_Renderer* renderer, TTF_Font* font);
+void renderRecursiveView(SDL_Renderer* renderer, AppData* data_ptr, std::string dirname);
+void buildRecursiveEntries(std::string dirname, int indent);
+std::string getDirectoryEntries(std::string dirname, SDL_Renderer* renderer, TTF_Font* font);
 std::string parseMouseClick(int mouse_click_x, int mouse_click_y);
+std::string getFilePermissions(struct stat info);
 
 int main(int argc, char **argv)
 {
@@ -58,15 +61,17 @@ int main(int argc, char **argv)
     // initialize and perform rendering loop
     AppData data;
     initialize(renderer, &data);
-    getDirectoryEntries(home, renderer, data.font);
+
+    std::string current_dir;
+    current_dir = getDirectoryEntries(home, renderer, data.font);
 
     render(renderer, &data);
     SDL_Event event;
     SDL_WaitEvent(&event);
 
-    
-    while (event.type != SDL_QUIT)
-    {
+    bool recursive_flag = false;
+    while (event.type != SDL_QUIT) 
+    {   
         if(event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT) {
             int mouse_click_x = event.button.x;
             int mouse_click_y = event.button.y;
@@ -78,9 +83,13 @@ int main(int argc, char **argv)
 
             if(next_element == "NULL") {
                 // do nothing for this click
+            } else if(next_element == "R") {
+                // render recursive viewing mode
+                recursive_flag = !recursive_flag;
+                if(recursive_flag) { buildRecursiveEntries(current_dir, 0); }
             } else if(next_element_type == "" || next_element_type == "dir" || next_element_type == "HOME" || next_element_type == "DESKTOP") {
                 ExplorerEntries.clear();
-                getDirectoryEntries(next_element, renderer, data.font);
+                current_dir = getDirectoryEntries(next_element, renderer, data.font);
             } else {
                 int pid = fork();
                 std::string open_file_cmd = "xdg-open " + next_element;
@@ -99,9 +108,15 @@ int main(int argc, char **argv)
             }
         }
         SDL_WaitEvent(&event);
-        render(renderer, &data);
+        if(recursive_flag) {
+            renderRecursiveView(renderer, &data, current_dir); 
+            
+        } else {
+            RecursiveEntries.clear();
+            render(renderer, &data); 
+        } 
+        
     }
-
 
     // clean up
     SDL_DestroyRenderer(renderer);
@@ -121,6 +136,7 @@ void initialize(SDL_Renderer* renderer, AppData* data_ptr)
     SDL_SetRenderDrawColor(renderer, 235, 235, 235, 255);
     // set the font
     data_ptr->font = TTF_OpenFont("resrc/OpenSans-Regular.ttf", 20);
+    data_ptr->recursive_font = TTF_OpenFont("resrc/OpenSans-Regular.ttf", 15);
 
     SDL_Surface *surf = IMG_Load("resrc/images/home_icon.png");
     data_ptr->home = SDL_CreateTextureFromSurface(renderer, surf);
@@ -136,14 +152,8 @@ void initialize(SDL_Renderer* renderer, AppData* data_ptr)
     surf = TTF_RenderText_Solid(data_ptr->font, "SIZE", header_color);
     data_ptr->size_header = SDL_CreateTextureFromSurface(renderer, surf);
 
-    surf = TTF_RenderText_Solid(data_ptr->font, "USER", header_color);
-    data_ptr->userpermissions_header = SDL_CreateTextureFromSurface(renderer, surf);
-
-    surf = TTF_RenderText_Solid(data_ptr->font, "GROUP", header_color);
-    data_ptr->grouppermissions_header = SDL_CreateTextureFromSurface(renderer, surf);
-
-    surf = TTF_RenderText_Solid(data_ptr->font, "ALL", header_color);
-    data_ptr->everyonepermissions_header = SDL_CreateTextureFromSurface(renderer, surf);
+    surf = TTF_RenderText_Solid(data_ptr->font, "PERMISSIONS", header_color);
+    data_ptr->permissions_header = SDL_CreateTextureFromSurface(renderer, surf);
 
     SDL_FreeSurface(surf);
 }
@@ -161,21 +171,13 @@ void render(SDL_Renderer* renderer, AppData* data_ptr)
     SDL_QueryTexture(data_ptr->filename_header, NULL, NULL, &(name_header.w), &(name_header.h));
     SDL_RenderCopy(renderer, data_ptr->filename_header, NULL, &name_header);
 
-    SDL_Rect size_header = {450, 7};
+    SDL_Rect size_header = {475, 7};
     SDL_QueryTexture(data_ptr->size_header, NULL, NULL, &(size_header.w), &(size_header.h));
     SDL_RenderCopy(renderer, data_ptr->size_header, NULL, &size_header);
 
-    SDL_Rect userpermissions_header = {560, 7};
-    SDL_QueryTexture(data_ptr->userpermissions_header, NULL, NULL, &(userpermissions_header.w), &(userpermissions_header.h));
-    SDL_RenderCopy(renderer, data_ptr->userpermissions_header, NULL, &userpermissions_header);
-
-    SDL_Rect grouppermissions_header = {635, 7};
-    SDL_QueryTexture(data_ptr->grouppermissions_header, NULL, NULL, &(grouppermissions_header.w), &(grouppermissions_header.h));
-    SDL_RenderCopy(renderer, data_ptr->grouppermissions_header, NULL, &grouppermissions_header);
-
-    SDL_Rect everyonepermissions_header = {720, 7};
-    SDL_QueryTexture(data_ptr->everyonepermissions_header, NULL, NULL, &(everyonepermissions_header.w), &(everyonepermissions_header.h));
-    SDL_RenderCopy(renderer, data_ptr->everyonepermissions_header, NULL, &everyonepermissions_header);
+    SDL_Rect permissions_header = {620, 7};
+    SDL_QueryTexture(data_ptr->permissions_header, NULL, NULL, &(permissions_header.w), &(permissions_header.h));
+    SDL_RenderCopy(renderer, data_ptr->permissions_header, NULL, &permissions_header);
     
     // Draw the scroll bar across the right side of the window and color it purple
     SDL_Rect scroll_bar_container = {785, 0, 20, 600}; 
@@ -204,8 +206,8 @@ void render(SDL_Renderer* renderer, AppData* data_ptr)
     SDL_Rect icon_container = {75, 67, 35, 35};
     
     SDL_Rect name_container = {135, 67};
-    SDL_Rect size_container = {450, 67};
-    SDL_Rect perms_container = {635, 67};
+    SDL_Rect size_container = {475, 67};
+    SDL_Rect perms_container = {620, 67};
 
     for(int i = 0; i < ExplorerEntries.size(); i++) {
         ExplorerEntries[i]->setCoordinates(icon_container.x, icon_container.x + icon_container.w, 
@@ -236,7 +238,48 @@ void render(SDL_Renderer* renderer, AppData* data_ptr)
     SDL_RenderPresent(renderer);
 }
 
-void getDirectoryEntries(std::string dirname, SDL_Renderer* renderer, TTF_Font* font)
+void renderRecursiveView(SDL_Renderer* renderer, AppData* data_ptr, std::string dirname) {
+    // reset render color to gray
+    SDL_SetRenderDrawColor(renderer, 235, 235, 235, 255);
+    // erase renderer content from the previous rendering
+    SDL_RenderClear(renderer);
+
+    SDL_Rect sidebar1 = {60, 0, 5, 600};
+    SDL_SetRenderDrawColor(renderer, 81, 12, 118, 255);
+    SDL_RenderFillRect(renderer, &sidebar1);
+
+    SDL_Rect recursiveview = {8, 127, 40, 40};
+    SDL_RenderCopy(renderer, data_ptr->recursiveview, NULL, &recursiveview);
+
+    std::vector<SDL_Texture*> RecursiveTextures;
+    
+    // Transform the string vector into renderable textures, store them in RecursiveTextures
+    SDL_Color name_color = {0, 0, 0}; 
+    SDL_Surface *surf;
+
+    for(int i = 0; i < RecursiveEntries.size(); i++) {
+        surf = TTF_RenderText_Solid(data_ptr->recursive_font, RecursiveEntries[i].c_str(), name_color);
+        RecursiveTextures.push_back(SDL_CreateTextureFromSurface(renderer, surf));
+    }
+
+    surf = TTF_RenderText_Solid(data_ptr->recursive_font, dirname.c_str(), name_color);
+    SDL_Texture* dir_texture = SDL_CreateTextureFromSurface(renderer, surf);
+    SDL_FreeSurface(surf);
+    SDL_Rect starting_row = {75, 10};
+    SDL_QueryTexture(dir_texture, NULL, NULL, &(starting_row.w), &(starting_row.h));
+    SDL_RenderCopy(renderer, dir_texture, NULL, &starting_row);
+    starting_row.x += 25;
+    starting_row.y += 25;
+
+    for(int i = 0; i < RecursiveTextures.size(); i++) {
+        SDL_QueryTexture(RecursiveTextures[i], NULL, NULL, &(starting_row.w), &(starting_row.h));
+        SDL_RenderCopy(renderer, RecursiveTextures[i], NULL, &starting_row);
+        starting_row.y += 25;
+    }
+    SDL_RenderPresent(renderer);
+}
+
+std::string getDirectoryEntries(std::string dirname, SDL_Renderer* renderer, TTF_Font* font)
 {
     // Struct containing the information about the current directory
     struct stat info;
@@ -270,8 +313,7 @@ void getDirectoryEntries(std::string dirname, SDL_Renderer* renderer, TTF_Font* 
             std::string curfile_path = dirname + "/" + files[i].c_str();
             err = stat(curfile_path.c_str(), &file_info);
             int curfile_size = file_info.st_size;
-            std::string curfile_perms = "rwxrwxrwx"; // temporary test (need a function for finding perms, using stat + S_..)
-            std::cout << "SIZE FOR " << curfile_name << "IS [" << curfile_size << "]" << std::endl;
+            std::string curfile_perms = getFilePermissions(file_info);
             if(err == 1) { std::cout << "DEBUG MSG: something went wrong obtaining file info" << std::endl;}
             
             /************************************/
@@ -296,7 +338,6 @@ void getDirectoryEntries(std::string dirname, SDL_Renderer* renderer, TTF_Font* 
 
                 /* EXECUTABLE (the current user has execute permissions (what about groups and others?)) */
                 if(file_info.st_mode & S_IXUSR) {
-                    std::cout << files[i] << " is a exe" << std::endl;
                     // Create an instance of FileEntry::Executable, constructing it with values parsed from the current file
                     Executable* exe = new Executable(curfile_name, "exe", curfile_size, curfile_path, curfile_perms, renderer, font);
                     exe->setIcon(renderer);
@@ -351,56 +392,13 @@ void getDirectoryEntries(std::string dirname, SDL_Renderer* renderer, TTF_Font* 
     {
         fprintf(stderr, "Error: directory argument passed into getDirectoryEntries '%s' not found\n", dirname.c_str());
     }
+    return dirname;
 }
 
-std::string parseMouseClick(int mouse_click_x, int mouse_click_y) {
+void buildRecursiveEntries(std::string dirname, int indent) {
 
-    /**** CLICKED ON HOME ICON ****/
-    if((mouse_click_x >= 8 && mouse_click_x <= 48) && (mouse_click_y >= 7 && mouse_click_y <= 47)) {
-        // return to the home directory
-        std::cout << "You clicked on the HOME button" << std::endl;
-        return home + ",HOME";
-    }
-    /**** CLICKED ON ***/
-    else if((mouse_click_x >= 8 && mouse_click_x <= 48) && (mouse_click_y >= 67 && mouse_click_y <= 107))  {
-        std::cout << "You clicked on the DESKTOP button" << std::endl;
-        return home + "/Desktop/,DESKTOP";
-
-    }
-    /**** CLICKED ON RECURSIVE VIEW ****/
-    else if((mouse_click_x >= 8 && mouse_click_x <= 48) && (mouse_click_y >= 127 && mouse_click_y <= 167))  {
-        std::cout << "You clicked on the RECURSIVE VIEW button" << std::endl;
-        return "R";
-        // render the current directory in recursive view
-        // set recursive mode flag
-    } else {
-        for(int i = 0; i < ExplorerEntries.size(); i++) {
-            if((mouse_click_x >= ExplorerEntries[i]->icon_coordinates[0] && mouse_click_x <= ExplorerEntries[i]->icon_coordinates[1]) &&
-            (mouse_click_y >= ExplorerEntries[i]->icon_coordinates[2] && mouse_click_y <= ExplorerEntries[i]->icon_coordinates[3])) {
-                    std::cout << "You clicked on the ICON of" << ExplorerEntries[i]->filepath << std::endl;
-                    return ExplorerEntries[i]->filepath + "," + ExplorerEntries[i]->entrytype;
-            }
-
-            if((mouse_click_x >= ExplorerEntries[i]->name_coordinates[0] && mouse_click_x <= ExplorerEntries[i]->name_coordinates[1]) &&
-            (mouse_click_y >= ExplorerEntries[i]->name_coordinates[2] && mouse_click_y <= ExplorerEntries[i]->name_coordinates[3])) {
-                    std::cout << "You clicked on the NAME of" << ExplorerEntries[i]->filepath << std::endl;
-                    return ExplorerEntries[i]->filepath + "," + ExplorerEntries[i]->entrytype;
-            }
-        }
-    }
-    std::cout << "You didn't click on an entry name or icon" << std::endl;
-    return "NULL";
-}
-
-
-
-/***** THE FOLLOWING COULD BE HELPFUL FOR RECURSIVE FILE VIEWING LATER ********
-//void listDirectory(std::string dirname, int indent = 0);
-void listDirectory(std::string dirname, int indent)
-{
-	std::string space = "";
-	for(int i = 0; i < indent; i++) { space += " "; }
-
+    std::string space = "          ";
+	for(int i = 0; i < indent; i++) { space += "          "; }
     struct stat info;
     int err = stat(dirname.c_str(), &info);
     std::vector<std::string> files;
@@ -412,12 +410,13 @@ void listDirectory(std::string dirname, int indent)
             files.push_back(entry->d_name);
         }
         closedir(dir);
-
+    }
+    
 	std::sort(files.begin(), files.end());
 	
 	int i, file_err;
 	struct stat file_info;
-
+	
 	for(int i = 0; i < files.size(); i++) {
 		std::string full_path = dirname + "/" + files[i];
 		file_err = stat(full_path.c_str(), &file_info);
@@ -425,11 +424,61 @@ void listDirectory(std::string dirname, int indent)
 			fprintf(stderr, "Uh, oh, shouldnt be here");
 		} else if(S_ISDIR(file_info.st_mode)) {
 			printf("%s%s (directory)\n", space.c_str(), files[i].c_str());
+            RecursiveEntries.push_back(space + files[i]);
 			if(files[i] != "." && files[i] != "..") {
-				listDirectory(full_path, indent + 1);
+				buildRecursiveEntries(full_path, indent + 1);
 			}				
 		} else {
-			printf("%s%s (directory)\n", space.c_str(), files[i].c_str());
+            RecursiveEntries.push_back(space + files[i]);
+			printf("%s%s \n", space.c_str(), files[i].c_str());
 		}
     }
-}}*/
+}
+
+std::string parseMouseClick(int mouse_click_x, int mouse_click_y) {
+
+    /**** CLICKED ON HOME ICON ****/
+    if((mouse_click_x >= 8 && mouse_click_x <= 48) && (mouse_click_y >= 7 && mouse_click_y <= 47)) {
+        // return to the home directory
+        return home + ",HOME";
+    }
+    /**** CLICKED ON ***/
+    else if((mouse_click_x >= 8 && mouse_click_x <= 48) && (mouse_click_y >= 67 && mouse_click_y <= 107))  {
+        return home + "/Desktop/,DESKTOP";
+
+    }
+    /**** CLICKED ON RECURSIVE VIEW ****/
+    else if((mouse_click_x >= 8 && mouse_click_x <= 48) && (mouse_click_y >= 127 && mouse_click_y <= 167))  {
+        return "R";
+        // render the current directory in recursive view
+        // set recursive mode flag
+    } else {
+        for(int i = 0; i < ExplorerEntries.size(); i++) {
+            if((mouse_click_x >= ExplorerEntries[i]->icon_coordinates[0] && mouse_click_x <= ExplorerEntries[i]->icon_coordinates[1]) &&
+            (mouse_click_y >= ExplorerEntries[i]->icon_coordinates[2] && mouse_click_y <= ExplorerEntries[i]->icon_coordinates[3])) {
+                    return ExplorerEntries[i]->filepath + "," + ExplorerEntries[i]->entrytype;
+            }
+
+            if((mouse_click_x >= ExplorerEntries[i]->name_coordinates[0] && mouse_click_x <= ExplorerEntries[i]->name_coordinates[1]) &&
+            (mouse_click_y >= ExplorerEntries[i]->name_coordinates[2] && mouse_click_y <= ExplorerEntries[i]->name_coordinates[3])) {
+                    return ExplorerEntries[i]->filepath + "," + ExplorerEntries[i]->entrytype;
+            }
+        }
+    }
+    return "NULL";
+}
+
+std::string getFilePermissions(struct stat info) {
+    std::string permissions = "";
+    if(info.st_mode & S_IRUSR) { permissions.append("r"); } else permissions.append("-");
+    if(info.st_mode & S_IWUSR) { permissions.append("w"); } else permissions.append("-");
+    if(info.st_mode & S_IXUSR) { permissions.append("x"); } else permissions.append("-");
+    if(info.st_mode & S_IRGRP) { permissions.append("r"); } else permissions.append("-");
+    if(info.st_mode & S_IWGRP) { permissions.append("w"); } else permissions.append("-");
+    if(info.st_mode & S_IXGRP) { permissions.append("x"); } else permissions.append("-");
+    if(info.st_mode & S_IROTH) { permissions.append("r"); } else permissions.append("-");
+    if(info.st_mode & S_IWOTH) { permissions.append("w"); } else permissions.append("-");
+    if(info.st_mode & S_IXOTH) { permissions.append("x"); } else permissions.append("-");
+
+    return permissions;
+}

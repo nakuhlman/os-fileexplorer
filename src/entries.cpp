@@ -15,6 +15,7 @@ FileEntry::FileEntry(std::string name, std::string type, int size, std::string p
 
 // Creates and saves a name texture using the parameters passed into the FileEntry instance's constructor
 void FileEntry::createNameTexture(std::string name, SDL_Renderer* renderer, TTF_Font* font) {
+    filename = name;
     SDL_Color name_color = {0, 0, 0}; 
     SDL_Surface *surf = TTF_RenderText_Solid(font, name.c_str(), name_color);
     data.name = SDL_CreateTextureFromSurface(renderer, surf);

@@ -35,6 +35,7 @@ class FileEntry {
         SDL_Data data;
         int size_in_bytes;
         std::string filepath;
+        std::string filename;
         std::vector<char> permissions;
         std::string entrytype;
         std::vector<int> icon_coordinates;
