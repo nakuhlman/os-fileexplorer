@@ -44,11 +44,12 @@ std::string home;
 /*************************/
 void initialize(SDL_Renderer *renderer, AppData *data_ptr);
 void render(SDL_Renderer *renderer, AppData *data_ptr);
-void renderRecursiveView(SDL_Renderer* renderer, AppData* data_ptr, std::string dirname);
+bool renderRecursiveView(SDL_Renderer* renderer, AppData* data_ptr, std::string dirname);
 void buildRecursiveEntries(std::string dirname, int indent);
 std::string getDirectoryEntries(std::string dirname, SDL_Renderer* renderer, TTF_Font* font);
 std::string parseMouseClick(int mouse_click_x, int mouse_click_y);
 std::string getFilePermissions(struct stat info);
+bool filenameCompare (std::string file1, std::string file2); 
 
 /*************************/
 /***** MAIN FUNCTION *****/
@@ -138,7 +139,7 @@ int main(int argc, char **argv)
         SDL_WaitEvent(&event);
         // Recursive flag indicates whether to render the normal file explorer view or recursive view
         if(recursive_flag) {
-            renderRecursiveView(renderer, &data, current_dir);      
+            renderRecursiveView(renderer, &data, current_dir);
         } else {
             RecursiveEntries.clear();
             render(renderer, &data); 
@@ -209,15 +210,15 @@ void render(SDL_Renderer* renderer, AppData* data_ptr)
     SDL_QueryTexture(data_ptr->permissions_header, NULL, NULL, &(permissions_header.w), &(permissions_header.h));
     SDL_RenderCopy(renderer, data_ptr->permissions_header, NULL, &permissions_header);
     
-    // Draw the scroll bar across the right side of the window and color it purple
-    SDL_Rect scroll_bar_container = {785, 0, 20, 600}; 
-    SDL_SetRenderDrawColor(renderer, 81, 12, 118, 255);
-    SDL_RenderFillRect(renderer, &scroll_bar_container);
+    // [NOT IMPLEMENTED] Draw the scroll bar across the right side of the window and color it purple
+    // SDL_Rect scroll_bar_container = {785, 0, 20, 600}; 
+    // SDL_SetRenderDrawColor(renderer, 81, 12, 118, 255);
+    // SDL_RenderFillRect(renderer, &scroll_bar_container);
 
-    // Draw the upper window header across the top of the window and color it purple
-    SDL_Rect scroll_bar = {785, 0, 20, 100}; 
-    SDL_SetRenderDrawColor(renderer, 152, 153, 155, 255);
-    SDL_RenderFillRect(renderer, &scroll_bar);
+    // [NOT IMPLEMENTED] Draw the upper window header across the top of the window and color it purple
+    // SDL_Rect scroll_bar = {785, 0, 20, 100}; 
+    // SDL_SetRenderDrawColor(renderer, 152, 153, 155, 255);
+    // SDL_RenderFillRect(renderer, &scroll_bar);
 
     // Draw a sidebar for separating buttons from file explorer items
     SDL_Rect sidebar1 = {60, 0, 5, 600};
@@ -269,7 +270,7 @@ void render(SDL_Renderer* renderer, AppData* data_ptr)
 }
 
 /* Render the recursive viewing mode */
-void renderRecursiveView(SDL_Renderer* renderer, AppData* data_ptr, std::string dirname) {
+bool renderRecursiveView(SDL_Renderer* renderer, AppData* data_ptr, std::string dirname) {
     // Reset render color to gray
     SDL_SetRenderDrawColor(renderer, 235, 235, 235, 255);
     // Erase renderer content from the previous rendering
@@ -295,6 +296,8 @@ void renderRecursiveView(SDL_Renderer* renderer, AppData* data_ptr, std::string 
     for(int i = 0; i < RecursiveEntries.size(); i++) {
         surf = TTF_RenderText_Solid(data_ptr->recursive_font, RecursiveEntries[i].c_str(), name_color);
         RecursiveTextures.push_back(SDL_CreateTextureFromSurface(renderer, surf));
+        // Recursive rendering limit - beyond this value, the program becomes too slow to take in inputs
+        if(i == 100) { break; }
     }
 
     // Render the directory name
@@ -312,9 +315,27 @@ void renderRecursiveView(SDL_Renderer* renderer, AppData* data_ptr, std::string 
         SDL_QueryTexture(RecursiveTextures[i], NULL, NULL, &(starting_row.w), &(starting_row.h));
         SDL_RenderCopy(renderer, RecursiveTextures[i], NULL, &starting_row);
         starting_row.y += 25;
+        // Recursive rendering limit - beyond this value, the program becomes too slow to take in inputs
+        if(i == 100) { break; }
     }
     SDL_RenderPresent(renderer);
+    return true;
 }
+
+/* Comparator for sorting files alphabetically */
+bool filenameCompare(std::string a, std::string b) 
+{
+    // Make copies of the filenames 
+    std::string file1 = a;
+    std::string file2 = b;
+
+    // Make all characters lowercase for the sake of comparison
+    for(int i = 0; i < file1.size(); i++) { file1[i] = tolower(file1[i]); }
+    for(int i = 0; i < file2.size(); i++) { file2[i] = tolower(file2[i]); }
+
+    // Perform a standard string comparison
+    return file1 < file2;
+}    
 
 /* Gets everything (files and directories) inside directory 'dirname' and creates FileEntry instances containing information about them */
 std::string getDirectoryEntries(std::string dirname, SDL_Renderer* renderer, TTF_Font* font)
@@ -337,7 +358,7 @@ std::string getDirectoryEntries(std::string dirname, SDL_Renderer* renderer, TTF
         closedir(dir);
 
         // Sort the files in the files vector in alphabetical order using the sort() function
-        std::sort(files.begin(), files.end());
+        std::sort(files.begin(), files.end(), filenameCompare);
         
         // Stores information about each individual entry (file or another directory) within the current directory
         struct stat file_info;
@@ -459,7 +480,7 @@ void buildRecursiveEntries(std::string dirname, int indent) {
     }
     
     // Sort the files array
-	std::sort(files.begin(), files.end());
+	std::sort(files.begin(), files.end(), filenameCompare);
 	
 	int i, file_err;
 	struct stat file_info;

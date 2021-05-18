@@ -81,7 +81,6 @@ void FileEntry::setCoordinates(int x1, int x2, int y1, int y2, std::string eleme
 
 // Set the icon for a directory
 void Directory::setIcon(SDL_Renderer* renderer) {
-    //std::cout<< "Making directory icon..." << std::endl;
     // surface is the intermediary
     SDL_Surface *surf = IMG_Load("resrc/images/folder_icon.png");
     // create a texture from the surface, then delete the surface (no longer needed)
@@ -91,7 +90,6 @@ void Directory::setIcon(SDL_Renderer* renderer) {
 
 // Set the icon for an executable
 void Executable::setIcon(SDL_Renderer* renderer) {
-    //std::cout<< "Making executable icon..." << std::endl;
     // surface is the intermediary
     SDL_Surface *surf = IMG_Load("resrc/images/executable_icon.png");
     // create a texture from the surface, then delete the surface (no longer needed)
@@ -100,7 +98,6 @@ void Executable::setIcon(SDL_Renderer* renderer) {
 }
 
 void Image::setIcon(SDL_Renderer* renderer) {
-    //std::cout<< "Making Image icon..." << std::endl;
     // surface is the intermediary
     SDL_Surface *surf = IMG_Load("resrc/images/image_icon.png");
     // create a texture from the surface, then delete the surface (no longer needed)
@@ -109,7 +106,6 @@ void Image::setIcon(SDL_Renderer* renderer) {
 }
 
 void Video::setIcon(SDL_Renderer* renderer) {
-    //std::cout<< "Making video icon..." << std::endl;
     // surface is the intermediary
     SDL_Surface *surf = IMG_Load("resrc/images/video_icon.png");
     // create a texture from the surface, then delete the surface (no longer needed)
@@ -118,7 +114,6 @@ void Video::setIcon(SDL_Renderer* renderer) {
 }
 
 void CodeFile::setIcon(SDL_Renderer* renderer) {
-    //std::cout<< "Making code icon..." << std::endl;
     // surface is the intermediary
     SDL_Surface *surf = IMG_Load("resrc/images/codefile_icon.png");
     // create a texture from the surface, then delete the surface (no longer needed)
@@ -127,7 +122,6 @@ void CodeFile::setIcon(SDL_Renderer* renderer) {
 }
 
 void OtherFile::setIcon(SDL_Renderer* renderer) {
-    //std::cout<< "Making other icon..." << std::endl;
     // surface is the intermediary
     SDL_Surface *surf = IMG_Load("resrc/images/otherfile_icon.png");
     // create a texture from the surface, then delete the surface (no longer needed)
